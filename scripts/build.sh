@@ -42,15 +42,24 @@ else
 fi
 
 BUILD_DATE=$(date '+%Y-%m-%d-%H:%M:%S')
-LDFLAGS="-X ${PKG}/internal/adapters/storage/memory.Version=${VERSION}"
-LDFLAGS="${LDFLAGS} -X ${PKG}/internal/adapters/storage/memory.BuildDate=${BUILD_DATE}"
-LDFLAGS="${LDFLAGS} -X ${PKG}/internal/adapters/storage/memory.Revision=${REVISION}"
-LDFLAGS="${LDFLAGS} -X ${PKG}/internal/adapters/storage/memory.Branch=${BRANCH}"
-LDFLAGS="${LDFLAGS} -X ${PKG}/internal/adapters/storage/memory.BuildUser=${BUILDUSER}"
-LDFLAGS="${LDFLAGS} -X ${PKG}/internal/adapters/storage/memory.GitCommit=${GIT_SHA}"
-LDFLAGS="${LDFLAGS} -X ${PKG}/internal/adapters/storage/memory.Name=${BIN}"
 # To optimize the build for alpine linux
 # LDFLAGS="${LDFLAGS} -w -linkmode external -extldflags \"-static\""
+
+VERSION_JSON=./internal/infrastructure/storage/embed/version.json
+cat <<- EOF > ${VERSION_JSON}
+{
+  "version":"${VERSION}",
+  "revision":"${REVISION}",
+  "git": {
+    "branch":"${BRANCH}",
+    "commit":"${GIT_SHA}"
+  },
+  "build": {
+    "user":"${BUILDUSER}",
+    "date": "${BUILD_DATE}"
+  }
+}
+EOF
 
 if [ -z "${OUTPUT_DIR:-}" ]; then
   OUTPUT_DIR=.
@@ -70,5 +79,6 @@ fi
 go build \
     -o ${OUTPUT} \
     -installsuffix "static" \
-    -ldflags "${LDFLAGS}" \
-    ./cmd/.
+    ./cmd/**/*.go
+
+rm -f ${VERSION_JSON}
