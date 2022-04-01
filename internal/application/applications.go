@@ -13,6 +13,7 @@ package application
 
 import (
 	"github.com/danifv27/soup/internal/application/logger"
+	"github.com/danifv27/soup/internal/application/signals"
 	"github.com/danifv27/soup/internal/application/soup/queries"
 	"github.com/danifv27/soup/internal/domain/soup"
 )
@@ -29,14 +30,17 @@ type Commands struct {
 //Applications contains all exposed services of the application layer
 type Applications struct {
 	LoggerService logger.Logger
+	SigHandler    signals.SignalHandler
 	Queries       Queries
 	Commands      Commands
 }
 
 // NewApplications Bootstraps Application Layer dependencies
-func NewApplications(logger logger.Logger, versionRepo soup.VersionRepository) Applications {
+func NewApplications(logger logger.Logger, handler signals.SignalHandler, versionRepo soup.VersionRepository) Applications {
+
 	return Applications{
 		LoggerService: logger,
+		SigHandler:    handler,
 		Queries: Queries{
 			GetVersionInfoHandler: queries.NewGetVersionInfoHandler(versionRepo),
 		},

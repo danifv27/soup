@@ -18,21 +18,30 @@
 package infrastructure
 
 import (
+	"os"
+	"syscall"
+
 	"github.com/danifv27/soup/internal/application/logger"
+	señales "github.com/danifv27/soup/internal/application/signals"
 	"github.com/danifv27/soup/internal/domain/soup"
 	"github.com/danifv27/soup/internal/infrastructure/logger/logrus"
+	"github.com/danifv27/soup/internal/infrastructure/signals"
 	"github.com/danifv27/soup/internal/infrastructure/storage/embed"
 )
 
 //Adapters contains the exposed adapters of interface adapters
 type Adapters struct {
 	LoggerService     logger.Logger
+	SigHandler        señales.SignalHandler
 	VersionRepository soup.VersionRepository
 }
 
-func NewServices() Adapters {
+func NewAdapters() Adapters {
+	l := logrus.NewLoggerService()
+	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, l)
 	return Adapters{
-		LoggerService:     logrus.NewLoggerService(),
+		LoggerService:     l,
+		SigHandler:        &h,
 		VersionRepository: embed.NewVersionRepo(),
 	}
 }
