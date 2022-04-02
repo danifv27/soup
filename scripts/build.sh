@@ -81,4 +81,4 @@ go build \
     -installsuffix "static" \
     ./cmd/**/*.go
 
-rm -f ${VERSION_JSON}
+rm -f ${VERSION_JSON}; touch ${VERSION_JSON}

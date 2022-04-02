@@ -20,7 +20,6 @@ func TestConsoleNotificationService_Notify(t *testing.T) {
 			name: "Should not return error",
 			args: args{
 				notification: notification.Notification{
-					Subject: "Test Subject",
 					Message: "Test Message",
 				},
 			},
