@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sync"
+	"syscall"
 
 	"github.com/danifv27/soup/internal/application"
 	"github.com/danifv27/soup/internal/application/soup/queries"
 	"github.com/danifv27/soup/internal/infrastructure"
+	"github.com/danifv27/soup/internal/infrastructure/signals"
 )
 
 type VersionCmd struct {
@@ -16,19 +17,19 @@ type VersionCmd struct {
 }
 
 func (cmd *VersionCmd) Run(cli *CLI) error {
-	var err error
-	var apps application.Applications
 	var info *queries.GetVersionInfoResult
+	var err error
 	var out []byte
-
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
+	var apps application.Applications
 
 	infra := infrastructure.NewAdapters()
 	infra.LoggerService.SetLevel(cli.Globals.LogLevel)
 	infra.LoggerService.SetFormat(cli.Globals.LogFormat)
-	// infra.LoggerService.Debug("debug message test")
-	infra.SigHandler.SetRunFunc(func() error {
+
+	apps = application.NewApplications(infra.LoggerService, infra.VersionRepository)
+
+	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
+	h.SetRunFunc(func() error {
 		if info, err = apps.Queries.GetVersionInfoHandler.Handle(); err != nil {
 			return err
 		}
@@ -42,18 +43,14 @@ func (cmd *VersionCmd) Run(cli *CLI) error {
 		}
 		return nil
 	})
-	infra.SigHandler.SetShutdownFunc(func(s os.Signal) error {
+	h.SetShutdownFunc(func(s os.Signal) error {
 
 		return nil
 	})
-	apps = application.NewApplications(infra.LoggerService, infra.SigHandler, infra.VersionRepository)
+	ports := infrastructure.NewPorts(apps, &h)
+	// infra.LoggerService.Debug("debug message test")
 
-	go func() {
-		infra.SigHandler.Run()
-		wg.Done()
-	}()
-
-	wg.Wait()
+	ports.MainLoop.Exec()
 
 	return nil
 }
