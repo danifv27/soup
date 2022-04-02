@@ -18,12 +18,12 @@ import (
 	"github.com/danifv27/soup/internal/domain/soup"
 )
 
-//Queries Contains all available query handlers of this app
+//Queries operations that request data
 type Queries struct {
 	GetVersionInfoHandler queries.GetVersionInfoHandler
 }
 
-//Commands Contains all available query handlers of this app
+//Commands operations that accept data to make a change or trigger an action
 type Commands struct {
 }
 
