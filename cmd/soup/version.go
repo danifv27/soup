@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/danifv27/soup/internal/application"
+	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/application/soup/queries"
 	"github.com/danifv27/soup/internal/infrastructure"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
@@ -21,6 +22,7 @@ func (cmd *VersionCmd) Run(cli *CLI) error {
 	var err error
 	var out []byte
 	var apps application.Applications
+	var notif notification.Notification
 
 	infra := infrastructure.NewAdapters()
 	infra.LoggerService.SetLevel(cli.Globals.LogLevel)
@@ -37,10 +39,18 @@ func (cmd *VersionCmd) Run(cli *CLI) error {
 			if out, err = json.MarshalIndent(info, "", "    "); err != nil {
 				return err
 			}
-			fmt.Println(string(out))
+			notif = notification.Notification{
+				Message: string(out),
+			}
+			// fmt.Println(string(out))
 		} else {
-			fmt.Println(info)
+			// fmt.Println(info)
+			notif = notification.Notification{
+				Message: fmt.Sprint(info),
+			}
 		}
+		infra.NotificationService.Notify(notif)
+
 		return nil
 	})
 	h.SetShutdownFunc(func(s os.Signal) error {

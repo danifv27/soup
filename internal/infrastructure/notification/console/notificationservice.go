@@ -1,7 +1,6 @@
 package console
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/danifv27/soup/internal/application/notification"
@@ -17,10 +16,7 @@ func NewNotificationService() *NotificationService {
 
 // Notify prints out the notifications in console
 func (NotificationService) Notify(notification notification.Notification) error {
-	jsonNotification, err := json.Marshal(notification)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Notification Received: %v", string(jsonNotification))
+
+	fmt.Printf(notification.Message)
 	return nil
 }
