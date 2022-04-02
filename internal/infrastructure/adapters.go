@@ -22,26 +22,30 @@ import (
 	"syscall"
 
 	"github.com/danifv27/soup/internal/application/logger"
+	"github.com/danifv27/soup/internal/application/notification"
 	señales "github.com/danifv27/soup/internal/application/signals"
 	"github.com/danifv27/soup/internal/domain/soup"
 	"github.com/danifv27/soup/internal/infrastructure/logger/logrus"
+	"github.com/danifv27/soup/internal/infrastructure/notification/console"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 	"github.com/danifv27/soup/internal/infrastructure/storage/embed"
 )
 
 //Adapters contains the exposed adapters of interface adapters
 type Adapters struct {
-	LoggerService     logger.Logger
-	SigHandler        señales.SignalHandler
-	VersionRepository soup.VersionRepository
+	LoggerService       logger.Logger
+	SigHandler          señales.SignalHandler
+	NotificationService notification.Notifier
+	VersionRepository   soup.VersionRepository
 }
 
 func NewAdapters() Adapters {
 	l := logrus.NewLoggerService()
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, l)
 	return Adapters{
-		LoggerService:     l,
-		SigHandler:        &h,
-		VersionRepository: embed.NewVersionRepo(),
+		LoggerService:       l,
+		SigHandler:          &h,
+		VersionRepository:   embed.NewVersionRepo(),
+		NotificationService: console.NewNotificationService(),
 	}
 }
