@@ -1,5 +1,7 @@
 package soup
 
+import "fmt"
+
 type VersionInfo struct {
 	//GitCommit The git commit that was compiled. This will be filled in by the compiler.
 	GitCommit string
@@ -16,4 +18,10 @@ type VersionInfo struct {
 	OsArch string
 	//Application Name
 	Name string
+}
+
+func (v VersionInfo) String() string {
+
+	return fmt.Sprintf("Version:\t%s\nGit commit:\t%s\nBuilt:\t\t%s (from %s by %s)",
+		v.Version, v.GitCommit, v.BuildDate, v.Branch, v.BuildUser)
 }

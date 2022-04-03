@@ -13,6 +13,8 @@ package application
 
 import (
 	"github.com/danifv27/soup/internal/application/logger"
+	"github.com/danifv27/soup/internal/application/notification"
+	"github.com/danifv27/soup/internal/application/soup/commands"
 	"github.com/danifv27/soup/internal/application/soup/queries"
 	"github.com/danifv27/soup/internal/domain/soup"
 )
@@ -24,6 +26,8 @@ type Queries struct {
 
 //Commands operations that accept data to make a change or trigger an action
 type Commands struct {
+	PrintVersion commands.PrintVersionRequestHandler
+	PlainClone   commands.PlainCloneRequestHandler
 }
 
 //Applications contains all exposed services of the application layer
@@ -34,13 +38,16 @@ type Applications struct {
 }
 
 // NewApplications Bootstraps Application Layer dependencies
-func NewApplications(logger logger.Logger, versionRepo soup.VersionRepository) Applications {
+func NewApplications(logger logger.Logger, notifier notification.Notifier, version soup.Version, git soup.Git) Applications {
 
 	return Applications{
 		LoggerService: logger,
 		Queries: Queries{
-			GetVersionInfoHandler: queries.NewGetVersionInfoHandler(versionRepo),
+			GetVersionInfoHandler: queries.NewGetVersionInfoHandler(version),
 		},
-		Commands: Commands{},
+		Commands: Commands{
+			PrintVersion: commands.NewPrintVersionRequestHandler(version, notifier),
+			PlainClone:   commands.NewPlainCloneRequestHandler(git),
+		},
 	}
 }

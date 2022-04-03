@@ -21,6 +21,7 @@ import (
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/domain/soup"
+	"github.com/danifv27/soup/internal/infrastructure/git"
 	"github.com/danifv27/soup/internal/infrastructure/logger/logrus"
 	"github.com/danifv27/soup/internal/infrastructure/notification/console"
 	"github.com/danifv27/soup/internal/infrastructure/storage/embed"
@@ -30,7 +31,8 @@ import (
 type Adapters struct {
 	LoggerService       logger.Logger
 	NotificationService notification.Notifier
-	VersionRepository   soup.VersionRepository
+	VersionRepository   soup.Version
+	GitRepository       soup.Git
 }
 
 func NewAdapters() Adapters {
@@ -40,5 +42,6 @@ func NewAdapters() Adapters {
 		LoggerService:       l,
 		VersionRepository:   embed.NewVersionRepo(),
 		NotificationService: console.NewNotificationService(),
+		GitRepository:       git.NewGitRepo(),
 	}
 }

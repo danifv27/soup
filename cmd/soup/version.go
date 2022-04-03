@@ -1,14 +1,11 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
 	"syscall"
 
 	"github.com/danifv27/soup/internal/application"
-	"github.com/danifv27/soup/internal/application/notification"
-	"github.com/danifv27/soup/internal/application/soup/queries"
+	"github.com/danifv27/soup/internal/application/soup/commands"
 	"github.com/danifv27/soup/internal/infrastructure"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 )
@@ -18,45 +15,32 @@ type VersionCmd struct {
 }
 
 func (cmd *VersionCmd) Run(cli *CLI) error {
-	var info *queries.GetVersionInfoResult
-	var err error
-	var out []byte
+	// var info *queries.GetVersionInfoResult
+	// var err error
+	// var out []byte
 	var apps application.Applications
-	var notif notification.Notification
+	// var notif notification.Notification
 
 	infra := infrastructure.NewAdapters()
 	infra.LoggerService.SetLevel(cli.Globals.LogLevel)
 	infra.LoggerService.SetFormat(cli.Globals.LogFormat)
 
-	apps = application.NewApplications(infra.LoggerService, infra.VersionRepository)
+	apps = application.NewApplications(infra.LoggerService, infra.NotificationService, infra.VersionRepository, infra.GitRepository)
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {
-		if info, err = apps.Queries.GetVersionInfoHandler.Handle(); err != nil {
-			return err
-		}
-		if cli.Version.Format == "json" {
-			if out, err = json.MarshalIndent(info, "", "    "); err != nil {
-				return err
-			}
-			notif = notification.Notification{
-				Message: string(out),
-			}
-			// fmt.Println(string(out))
-		} else {
-			// fmt.Println(info)
-			notif = notification.Notification{
-				Message: fmt.Sprint(info),
-			}
-		}
-		infra.NotificationService.Notify(notif)
 
-		return nil
+		req := commands.PrintVersionRequest{
+			Format: cli.Version.Format,
+		}
+		return apps.Commands.PrintVersion.Handle(req)
 	})
+
 	h.SetShutdownFunc(func(s os.Signal) error {
 
 		return nil
 	})
+
 	ports := infrastructure.NewPorts(apps, &h)
 	// infra.LoggerService.Debug("debug message test")
 

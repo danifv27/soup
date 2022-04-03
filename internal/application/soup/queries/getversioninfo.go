@@ -27,11 +27,11 @@ type GetVersionInfoHandler interface {
 }
 
 type getVersionInfoHandler struct {
-	versionrepo soup.VersionRepository
+	versionrepo soup.Version
 }
 
 //NewGetCragRequestHandler Handler Constructor
-func NewGetVersionInfoHandler(versionrepo soup.VersionRepository) GetVersionInfoHandler {
+func NewGetVersionInfoHandler(versionrepo soup.Version) GetVersionInfoHandler {
 
 	return getVersionInfoHandler{versionrepo: versionrepo}
 }
