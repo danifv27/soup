@@ -15,6 +15,21 @@
                 "version"
             ],
             "showLog": true
+        }, {
+            "name": "Debug Sync Command",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/soup",
+            "env": {},
+            "args": [
+                "sync",
+                "-r",
+                "https://github.com/danifv27/goHelloWorld.git",
+                "-t",
+                "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"
+            ],
+            "showLog": true
         }
     ]
 }

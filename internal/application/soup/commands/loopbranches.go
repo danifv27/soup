@@ -9,8 +9,10 @@ import (
 )
 
 type LoopBranchesRequest struct {
-	URL    string
-	Period int
+	URL      string
+	Period   int
+	Token    string
+	Username string
 }
 
 type LoopBranchesRequestHandler interface {
@@ -39,11 +41,11 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 
 	// Clone repo
 	cloneLocation = fmt.Sprintf("%s%d", "/tmp/soup/", time.Now().Unix())
-	if err = h.repo.PlainClone(cloneLocation, command.URL); err != nil {
+	if err = h.repo.PlainClone(cloneLocation, command.URL, command.Username, command.Token); err != nil {
 		return err
 	}
 	// Get branch names
-	if branchNames, err = h.repo.GetBranchNames(); err != nil {
+	if branchNames, err = h.repo.GetBranchNames(command.Username, command.Token); err != nil {
 		return err
 	}
 	h.logger.WithFields(logger.Fields{

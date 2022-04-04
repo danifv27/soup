@@ -4,23 +4,42 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/danifv27/soup/internal/application/logger"
 	gogit "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
 type GitRepo struct {
-	repo *gogit.Repository
+	logger logger.Logger
+	repo   *gogit.Repository
 }
 
-func NewGitRepo() GitRepo {
-	return GitRepo{}
+func NewGitRepo(l logger.Logger) GitRepo {
+	return GitRepo{
+		logger: l,
+	}
 }
 
-func (g *GitRepo) PlainClone(location string, url string) error {
+func (g *GitRepo) PlainClone(location string, url string, username string, token string) error {
 	var err error
 	var r *gogit.Repository
 
+	if username == "" {
+		username = "dummy"
+	}
+	g.logger.WithFields(logger.Fields{
+		"url":      url,
+		"location": location,
+		"token":    token,
+	}).Info("Clonig git repository")
+	// Authentication
+	auth := http.BasicAuth{
+		Username: username,
+		Password: token,
+	}
 	if r, err = gogit.PlainClone(location, false, &gogit.CloneOptions{
-		URL: url,
+		Auth: &auth,
+		URL:  url,
 	}); err != nil {
 		return err
 	}
@@ -30,7 +49,7 @@ func (g *GitRepo) PlainClone(location string, url string) error {
 	return nil
 }
 
-func (g *GitRepo) GetBranchNames() ([]string, error) {
+func (g *GitRepo) GetBranchNames(username string, token string) ([]string, error) {
 	var branchNames []string
 
 	if g.repo == nil {
@@ -40,7 +59,16 @@ func (g *GitRepo) GetBranchNames() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	refList, err := remote.List(&gogit.ListOptions{})
+	if username == "" {
+		username = "dummy"
+	}
+	auth := http.BasicAuth{
+		Username: username,
+		Password: token,
+	}
+	refList, err := remote.List(&gogit.ListOptions{
+		Auth: &auth,
+	})
 	if err != nil {
 		return nil, err
 	}
