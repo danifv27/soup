@@ -37,11 +37,11 @@ type Adapters struct {
 
 func NewAdapters() Adapters {
 	l := logrus.NewLoggerService()
-
+	r := git.NewGitRepo()
 	return Adapters{
 		LoggerService:       l,
 		VersionRepository:   embed.NewVersionRepo(),
 		NotificationService: console.NewNotificationService(),
-		GitRepository:       git.NewGitRepo(),
+		GitRepository:       &r,
 	}
 }

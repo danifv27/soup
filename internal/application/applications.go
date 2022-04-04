@@ -27,12 +27,13 @@ type Queries struct {
 //Commands operations that accept data to make a change or trigger an action
 type Commands struct {
 	PrintVersion commands.PrintVersionRequestHandler
-	PlainClone   commands.PlainCloneRequestHandler
+	LoopBranches commands.LoopBranchesRequestHandler
 }
 
 //Applications contains all exposed services of the application layer
 type Applications struct {
 	LoggerService logger.Logger
+	Notifier      notification.Notifier
 	Queries       Queries
 	Commands      Commands
 }
@@ -42,12 +43,13 @@ func NewApplications(logger logger.Logger, notifier notification.Notifier, versi
 
 	return Applications{
 		LoggerService: logger,
+		Notifier:      notifier,
 		Queries: Queries{
 			GetVersionInfoHandler: queries.NewGetVersionInfoHandler(version),
 		},
 		Commands: Commands{
 			PrintVersion: commands.NewPrintVersionRequestHandler(version, notifier),
-			PlainClone:   commands.NewPlainCloneRequestHandler(git),
+			LoopBranches: commands.NewLoopBranchesRequestHandler(git, logger),
 		},
 	}
 }
