@@ -5,13 +5,14 @@ import (
 	"syscall"
 
 	"github.com/danifv27/soup/internal/application"
+	"github.com/danifv27/soup/internal/application/soup/commands"
 	"github.com/danifv27/soup/internal/infrastructure"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 )
 
 type SyncCmd struct {
 	Repo     string `short:"r" help:"url of the repository."`
-	Interval string `short:"i" help:"execution interval." default:"120"`
+	Interval int    `short:"i" help:"execution interval." default:"120"`
 }
 
 func (cmd *SyncCmd) Run(cli *CLI) error {
@@ -25,8 +26,16 @@ func (cmd *SyncCmd) Run(cli *CLI) error {
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {
+		var err error
 
-		return nil
+		req := commands.LoopBranchesRequest{
+			URL:    cli.Sync.Repo,
+			Period: cli.Sync.Interval,
+		}
+		if err = apps.Commands.LoopBranches.Handle(req); err != nil {
+			infra.LoggerService.Error(err)
+		}
+		return err
 	})
 	h.SetShutdownFunc(func(s os.Signal) error {
 

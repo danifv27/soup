@@ -29,11 +29,15 @@ func (cmd *VersionCmd) Run(cli *CLI) error {
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {
+		var err error
 
 		req := commands.PrintVersionRequest{
 			Format: cli.Version.Format,
 		}
-		return apps.Commands.PrintVersion.Handle(req)
+		if err = apps.Commands.PrintVersion.Handle(req); err != nil {
+			infra.LoggerService.Error(err)
+		}
+		return err
 	})
 
 	h.SetShutdownFunc(func(s os.Signal) error {
