@@ -51,5 +51,10 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 	h.logger.WithFields(logger.Fields{
 		"branches": branchNames,
 	}).Info("Branches parsed")
+	// Fetch branches
+	if err = h.repo.Fetch(command.Username, command.Token); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -35,9 +35,8 @@ func (cmd *SyncCmd) Run(cli *CLI) error {
 			Period: cli.Sync.Interval,
 			Token:  cli.Sync.Token,
 		}
-		if err = apps.Commands.LoopBranches.Handle(req); err != nil {
-			infra.LoggerService.Error(err)
-		}
+		err = apps.Commands.LoopBranches.Handle(req)
+
 		return err
 	})
 	h.SetShutdownFunc(func(s os.Signal) error {

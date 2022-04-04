@@ -88,7 +88,7 @@ func (h *Handler) Run() error {
 			return
 		}
 
-		h.Logger.Info(fmt.Sprintf("Received shutdown signal: %s", sigHupOrTerm))
+		h.Logger.Debug(fmt.Sprintf("Received shutdown signal: %s", sigHupOrTerm))
 		h.Logger.Debug("Calling shutdown handler")
 		shutdownErr.set(h.ShutdownFunc(sigHupOrTerm))
 		h.Logger.Debug("Shutdown handler complete")

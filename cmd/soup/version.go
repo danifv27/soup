@@ -34,9 +34,8 @@ func (cmd *VersionCmd) Run(cli *CLI) error {
 		req := commands.PrintVersionRequest{
 			Format: cli.Version.Format,
 		}
-		if err = apps.Commands.PrintVersion.Handle(req); err != nil {
-			infra.LoggerService.Error(err)
-		}
+		err = apps.Commands.PrintVersion.Handle(req)
+
 		return err
 	})
 

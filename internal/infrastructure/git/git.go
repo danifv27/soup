@@ -6,7 +6,9 @@ import (
 
 	"github.com/danifv27/soup/internal/application/logger"
 	gogit "github.com/go-git/go-git/v5"
+	config "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/pkg/errors"
 )
 
 type GitRepo struct {
@@ -41,7 +43,8 @@ func (g *GitRepo) PlainClone(location string, url string, username string, token
 		Auth: &auth,
 		URL:  url,
 	}); err != nil {
-		return err
+
+		return errors.Wrap(err, "plainclone")
 	}
 
 	g.repo = r
@@ -57,7 +60,7 @@ func (g *GitRepo) GetBranchNames(username string, token string) ([]string, error
 	}
 	remote, err := g.repo.Remote("origin")
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "remote")
 	}
 	if username == "" {
 		username = "dummy"
@@ -70,7 +73,7 @@ func (g *GitRepo) GetBranchNames(username string, token string) ([]string, error
 		Auth: &auth,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "remote listing")
 	}
 	refPrefix := "refs/heads/"
 	for _, ref := range refList {
@@ -83,4 +86,25 @@ func (g *GitRepo) GetBranchNames(username string, token string) ([]string, error
 	}
 
 	return branchNames, nil
+}
+
+func (g *GitRepo) Fetch(username string, token string) error {
+
+	if username == "" {
+		username = "dummy"
+	}
+	auth := http.BasicAuth{
+		Username: username,
+		Password: token,
+	}
+
+	err := g.repo.Fetch(&gogit.FetchOptions{
+		Auth:     &auth,
+		RefSpecs: []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
+	})
+	if err != nil {
+		return errors.Wrap(err, "fetch")
+	}
+
+	return nil
 }

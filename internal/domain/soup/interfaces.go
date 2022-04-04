@@ -8,4 +8,5 @@ type Version interface {
 type Git interface {
 	PlainClone(location string, url string, username string, token string) error
 	GetBranchNames(username string, token string) ([]string, error)
+	Fetch(username string, token string) error
 }
