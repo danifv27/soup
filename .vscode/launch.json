@@ -15,8 +15,8 @@
                 "version"
             ],
             "showLog": true
-        }, {
-            "name": "Debug Sync Command",
+        },{
+            "name": "Sync GitHub",
             "type": "go",
             "request": "launch",
             "mode": "debug",
@@ -28,6 +28,25 @@
                 "https://github.com/danifv27/goHelloWorld.git",
                 "-t",
                 "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"
+            ],
+            "showLog": true
+        },{
+            "name": "Sync Bitbucket",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/soup",
+            "env": {},
+            "args": [
+                "sync",
+                "-r",
+                "https://tools.adidas-group.com/bitbucket/scm/productapp/papp-deployments.git",
+                "-t",
+                "NDg2NTIyMTcxNTM0Ou+gEeRZwIbR/cbwt3kDIxOU+eGc"
+                "-u",
+                "fraildan",
+                "--log-level",
+                "debug"
             ],
             "showLog": true
         }
