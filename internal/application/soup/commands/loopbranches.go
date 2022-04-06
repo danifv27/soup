@@ -21,14 +21,14 @@ type LoopBranchesRequestHandler interface {
 
 type loopBranchesRequestHandler struct {
 	logger logger.Logger
-	repo   soup.Git
+	svc    soup.Git
 }
 
 //NewUpdateCragRequestHandler Constructor
 func NewLoopBranchesRequestHandler(git soup.Git, logger logger.Logger) LoopBranchesRequestHandler {
 
 	return loopBranchesRequestHandler{
-		repo:   git,
+		svc:    git,
 		logger: logger,
 	}
 }
@@ -41,20 +41,36 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 
 	// Clone repo
 	cloneLocation = fmt.Sprintf("%s%d", "/tmp/soup/", time.Now().Unix())
-	if err = h.repo.PlainClone(cloneLocation, command.URL, command.Username, command.Token); err != nil {
+	if err = h.svc.PlainClone(cloneLocation, command.URL, command.Username, command.Token); err != nil {
 		return err
 	}
 	// Get branch names
-	if branchNames, err = h.repo.GetBranchNames(command.Username, command.Token); err != nil {
+	if branchNames, err = h.svc.GetBranchNames(command.Username, command.Token); err != nil {
 		return err
 	}
 	h.logger.WithFields(logger.Fields{
 		"branches": branchNames,
 	}).Info("Branches parsed")
 	// Fetch branches
-	if err = h.repo.Fetch(command.Username, command.Token); err != nil {
+	if err = h.svc.Fetch(command.Username, command.Token); err != nil {
 		return err
 	}
+
+	// Checkout to the branches and do GitOps stuff
+	for _, branchName := range branchNames {
+		// Checkout
+		if err = h.svc.Checkout(branchName); err != nil {
+			return err
+		}
+
+		// // Process branch
+		// err = processBranch(branchName)
+		// if err != nil {
+		// 	fmt.Println("Error processing branch")
+		// 	panic(err)
+		// }
+	}
+	// os.RemoveAll(cloneLocation)
 
 	return nil
 }

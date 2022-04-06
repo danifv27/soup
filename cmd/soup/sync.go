@@ -31,9 +31,10 @@ func (cmd *SyncCmd) Run(cli *CLI) error {
 		var err error
 
 		req := commands.LoopBranchesRequest{
-			URL:    cli.Sync.Repo,
-			Period: cli.Sync.Interval,
-			Token:  cli.Sync.Token,
+			URL:      cli.Sync.Repo,
+			Period:   cli.Sync.Interval,
+			Token:    cli.Sync.Token,
+			Username: cli.Sync.Username,
 		}
 		err = apps.Commands.LoopBranches.Handle(req)
 
