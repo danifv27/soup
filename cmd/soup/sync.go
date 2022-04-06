@@ -11,10 +11,18 @@ import (
 )
 
 type SyncCmd struct {
-	Token    string `short:"t" help:"personal access token"`
-	Repo     string `short:"r" help:"url of the repository."`
-	Interval int    `short:"i" help:"execution interval." default:"120"`
-	Username string `short:"u" help:"git username"`
+	Repo struct {
+		Repo     string `arg help:"repo to sync"`
+		Interval int    `short:"i" help:"synchronize every" default:"120"`
+		As       struct {
+			Username struct {
+				Username  string `arg help:"username"`
+				Withtoken struct {
+					Withtoken string `arg help:"personal access token"`
+				} `cmd`
+			} `arg`
+		} `cmd`
+	} `arg`
 }
 
 func (cmd *SyncCmd) Run(cli *CLI) error {
@@ -31,10 +39,10 @@ func (cmd *SyncCmd) Run(cli *CLI) error {
 		var err error
 
 		req := commands.LoopBranchesRequest{
-			URL:      cli.Sync.Repo,
-			Period:   cli.Sync.Interval,
-			Token:    cli.Sync.Token,
-			Username: cli.Sync.Username,
+			URL:      cli.Sync.Repo.Repo,
+			Period:   cli.Sync.Repo.Interval,
+			Token:    cli.Sync.Repo.As.Username.Withtoken.Withtoken,
+			Username: cli.Sync.Repo.As.Username.Username,
 		}
 		err = apps.Commands.LoopBranches.Handle(req)
 

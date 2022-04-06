@@ -24,9 +24,10 @@
             "env": {},
             "args": [
                 "sync",
-                "-r",
                 "https://github.com/danifv27/goHelloWorld.git",
-                "-t",
+                "as",
+                "dummy",
+                "withtoken",
                 "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"
             ],
             "showLog": true
@@ -39,12 +40,13 @@
             "env": {},
             "args": [
                 "sync",
-                "-r",
                 "https://tools.adidas-group.com/bitbucket/scm/productapp/papp-deployments.git",
-                "-t",
-                "NDg2NTIyMTcxNTM0Ou+gEeRZwIbR/cbwt3kDIxOU+eGc"
-                "-u",
+                "-i",
+                "90",
+                "as",
                 "fraildan",
+                "withtoken",
+                "NDg2NTIyMTcxNTM0Ou+gEeRZwIbR/cbwt3kDIxOU+eGc",
                 "--log-level",
                 "debug"
             ],

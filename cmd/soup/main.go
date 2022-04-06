@@ -11,7 +11,7 @@ import (
 type CLI struct {
 	Globals
 	Version VersionCmd `cmd:"" help:"Show the version information"`
-	Sync    SyncCmd    `cmd:"" help:"Start syncing deployments"`
+	Sync    SyncCmd    `cmd:"" help:"Reconcile kubernetes and vcs"`
 }
 
 type Globals struct {
