@@ -25,3 +25,13 @@ func (v VersionInfo) String() string {
 	return fmt.Sprintf("Version:\t%s\nGit commit:\t%s\nBuilt:\t\t%s (from %s by %s)",
 		v.Version, v.GitCommit, v.BuildDate, v.Branch, v.BuildUser)
 }
+
+type SoupInfo struct {
+	Kustomizations []Kustomization `yaml:"kustomizations"`
+}
+
+type Kustomization struct {
+	Namespace string `yaml:"namespace"`
+	Branch    string `yaml:"branch"`
+	Overlay   string `yaml:"overlay"`
+}

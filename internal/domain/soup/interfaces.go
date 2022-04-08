@@ -11,3 +11,7 @@ type Git interface {
 	Fetch(username string, token string) error
 	Checkout(branchName string) error
 }
+
+type Config interface {
+	GetSoupInfo(path string) (SoupInfo, error)
+}

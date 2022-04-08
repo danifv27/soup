@@ -11,18 +11,26 @@ import (
 )
 
 type SyncCmd struct {
-	Token    string `short:"t" help:"personal access token"`
-	Repo     string `short:"r" help:"url of the repository."`
-	Interval int    `short:"i" help:"execution interval." default:"120"`
-	Username string `short:"u" help:"git username"`
+	Repo struct {
+		Repo     string `arg:"" help:"repo to sync"`
+		Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
+		As       struct {
+			Username struct {
+				Username  string `arg:"" help:"username" env:"SOUP_SYNC_USERNAME" optional:""`
+				Withtoken struct {
+					Withtoken string `arg:"" help:"personal access token" env:"SOUP_SYNC_TOKEN" optional:""`
+				} `cmd:""`
+			} `arg:""`
+		} `cmd:""`
+	} `arg:""`
 }
 
 func (cmd *SyncCmd) Run(cli *CLI) error {
 	var apps application.Applications
 
 	infra := infrastructure.NewAdapters()
-	infra.LoggerService.SetLevel(cli.Globals.LogLevel)
-	infra.LoggerService.SetFormat(cli.Globals.LogFormat)
+	infra.LoggerService.SetLevel(cli.Globals.Logging.Level)
+	infra.LoggerService.SetFormat(cli.Globals.Logging.Format)
 
 	apps = application.NewApplications(infra.LoggerService, infra.NotificationService, infra.VersionRepository, infra.GitRepository)
 

@@ -9,15 +9,16 @@ import (
 )
 
 type CLI struct {
-	Globals
-	Version VersionCmd `cmd:"" help:"Show the version information"`
-	Sync    SyncCmd    `cmd:"" help:"Start syncing deployments"`
+	Globals `envprefix:"SOUP_"`
+	Version VersionCmd `cmd:"" help:"Show the version information" envprefix:"SOUP_VERSION_"`
+	Sync    SyncCmd    `cmd:"" help:"Reconcile kubernetes and vcs" envprefix:"SOUP_SYNC_"`
 }
 
 type Globals struct {
-	// Config   string `help:"Location of config files" default:"${config_file}" type:"path"`
-	LogLevel  string `enum:"debug,info,warn,error,fatal" help:"Set the logging level (debug|info|warn|error|fatal)" default:"info" env:"SOUP_LOG_LEVEL"`
-	LogFormat string `help:"The log target and format. Example: logger:syslog?appname=bob&local=7 or logger:stdout?json=true" default:"logger:stdout?json=false" env:"SOUP_LOG_FORMAT"`
+	Logging struct {
+		Level  string `enum:"debug,info,warn,error,fatal" help:"Set the logging level (debug|info|warn|error|fatal)" default:"info" env:"LEVEL"`
+		Format string `help:"The log target and format. Example: logger:syslog?appname=bob&local=7 or logger:stdout?json=true" default:"logger:stdout?json=false" env:"FORMAT"`
+	} `embed:"" prefix:"logging." envprefix:"LOG_"`
 }
 
 func main() {

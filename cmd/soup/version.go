@@ -22,8 +22,8 @@ func (cmd *VersionCmd) Run(cli *CLI) error {
 	// var notif notification.Notification
 
 	infra := infrastructure.NewAdapters()
-	infra.LoggerService.SetLevel(cli.Globals.LogLevel)
-	infra.LoggerService.SetFormat(cli.Globals.LogFormat)
+	infra.LoggerService.SetLevel(cli.Globals.Logging.Level)
+	infra.LoggerService.SetFormat(cli.Globals.Logging.Format)
 
 	apps = application.NewApplications(infra.LoggerService, infra.NotificationService, infra.VersionRepository, infra.GitRepository)
 

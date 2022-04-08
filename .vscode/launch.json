@@ -16,12 +16,31 @@
             ],
             "showLog": true
         },{
+            "name": "Sync GitHub With Envars",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/soup",
+            "env": {
+                "SOUP_SYNC_TOKEN": "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"
+            },
+            "args": [
+                "sync",
+                "https://github.com/danifv27/goHelloWorld.git",
+                "as",
+                "dummy",
+                "withtoken",
+            ],
+            "showLog": true
+        },{
             "name": "Sync GitHub",
             "type": "go",
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/soup",
-            "env": {},
+            "env": {
+                "SOUP_TOKEN": "kkdlvk"
+            },
             "args": [
                 "sync",
                 "-r",

@@ -17,10 +17,6 @@ var (
 	Name string
 )
 
-type versionJSON struct {
-	Version string `json:version`
-}
-
 type VersionRepo struct {
 	versioninfo soup.VersionInfo
 }
