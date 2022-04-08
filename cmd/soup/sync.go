@@ -12,17 +12,17 @@ import (
 
 type SyncCmd struct {
 	Repo struct {
-		Repo     string `arg help:"repo to sync"`
-		Interval int    `short:"i" help:"synchronize every" default:"120"`
+		Repo     string `arg:"" help:"repo to sync"`
+		Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
 		As       struct {
 			Username struct {
-				Username  string `arg help:"username"`
+				Username  string `arg:"" help:"username" env:"SOUP_SYNC_USERNAME" optional:""`
 				Withtoken struct {
-					Withtoken string `arg help:"personal access token"`
-				} `cmd`
-			} `arg`
-		} `cmd`
-	} `arg`
+					Withtoken string `arg:"" help:"personal access token" env:"SOUP_SYNC_TOKEN" optional:""`
+				} `cmd:""`
+			} `arg:""`
+		} `cmd:""`
+	} `arg:""`
 }
 
 func (cmd *SyncCmd) Run(cli *CLI) error {
