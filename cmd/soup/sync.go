@@ -12,17 +12,17 @@ import (
 
 type SyncCmd struct {
 	Repo struct {
-		Repo     string `arg:"" help:"repo to sync"`
-		Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
+		Repo     string `arg help:"repo to sync"`
+		Interval int    `short:"i" help:"synchronize every" default:"120"`
 		As       struct {
 			Username struct {
-				Username  string `arg:"" help:"username" env:"SOUP_SYNC_USERNAME" optional:""`
+				Username  string `arg help:"username"`
 				Withtoken struct {
-					Withtoken string `arg:"" help:"personal access token" env:"SOUP_SYNC_TOKEN" optional:""`
-				} `cmd:""`
-			} `arg:""`
-		} `cmd:""`
-	} `arg:""`
+					Withtoken string `arg help:"personal access token"`
+				} `cmd`
+			} `arg`
+		} `cmd`
+	} `arg`
 }
 
 func (cmd *SyncCmd) Run(cli *CLI) error {
@@ -39,10 +39,10 @@ func (cmd *SyncCmd) Run(cli *CLI) error {
 		var err error
 
 		req := commands.LoopBranchesRequest{
-			URL:      cli.Sync.Repo,
-			Period:   cli.Sync.Interval,
-			Token:    cli.Sync.Token,
-			Username: cli.Sync.Username,
+			URL:      cli.Sync.Repo.Repo,
+			Period:   cli.Sync.Repo.Interval,
+			Token:    cli.Sync.Repo.As.Username.Withtoken.Withtoken,
+			Username: cli.Sync.Repo.As.Username.Username,
 		}
 		err = apps.Commands.LoopBranches.Handle(req)
 

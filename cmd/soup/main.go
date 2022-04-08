@@ -9,9 +9,9 @@ import (
 )
 
 type CLI struct {
-	Globals `envprefix:"SOUP_"`
-	Version VersionCmd `cmd:"" help:"Show the version information" envprefix:"SOUP_VERSION_"`
-	Sync    SyncCmd    `cmd:"" help:"Reconcile kubernetes and vcs" envprefix:"SOUP_SYNC_"`
+	Globals
+	Version VersionCmd `cmd:"" help:"Show the version information"`
+	Sync    SyncCmd    `cmd:"" help:"Reconcile kubernetes and vcs"`
 }
 
 type Globals struct {
