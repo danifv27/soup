@@ -41,7 +41,7 @@ kubectl apply -f install.yml
 ## Usage
 
 ### Deployment Configuration file
-Soup reads a file named `.soup.yml` on the repository branches in order to know what to deploy and in which namespace. An example can be found in [docs/examples/.soup.yml](https://github.com/caldito/soup/blob/main/docs/examples/.soup.yml).
+Soup reads a file named `.soup.yaml` on the repository branches in order to know what to deploy and in which namespace. An example can be found in [docs/examples/.soup.yaml](https://github.com/caldito/soup/blob/main/docs/examples/.soup.yaml).
 
 ### Arguments
 The command line arguments should be in this form:

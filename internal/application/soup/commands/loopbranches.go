@@ -22,12 +22,14 @@ type LoopBranchesRequestHandler interface {
 type loopBranchesRequestHandler struct {
 	logger logger.Logger
 	svc    soup.Git
+	config soup.Config
 }
 
 //NewUpdateCragRequestHandler Constructor
-func NewLoopBranchesRequestHandler(git soup.Git, logger logger.Logger) LoopBranchesRequestHandler {
+func NewLoopBranchesRequestHandler(git soup.Git, config soup.Config, logger logger.Logger) LoopBranchesRequestHandler {
 
 	return loopBranchesRequestHandler{
+		config: config,
 		svc:    git,
 		logger: logger,
 	}
@@ -38,6 +40,7 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 	var cloneLocation string
 	var branchNames []string
 	var err error
+	var info soup.SoupInfo
 
 	// Clone repo
 	cloneLocation = fmt.Sprintf("%s%d", "/tmp/soup/", time.Now().Unix())
@@ -62,8 +65,11 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 		if err = h.svc.Checkout(branchName); err != nil {
 			return err
 		}
-
-		// // Process branch
+		// Process branch
+		info = h.config.GetSoupInfo(cloneLocation)
+		h.logger.WithFields(logger.Fields{
+			"info": info,
+		}).Info("soup.yaml parsed")
 		// err = processBranch(branchName)
 		// if err != nil {
 		// 	fmt.Println("Error processing branch")

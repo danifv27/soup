@@ -32,7 +32,11 @@ func (cmd *SyncCmd) Run(cli *CLI) error {
 	infra.LoggerService.SetLevel(cli.Globals.Logging.Level)
 	infra.LoggerService.SetFormat(cli.Globals.Logging.Format)
 
-	apps = application.NewApplications(infra.LoggerService, infra.NotificationService, infra.VersionRepository, infra.GitRepository)
+	apps = application.NewApplications(infra.LoggerService,
+		infra.NotificationService,
+		infra.VersionRepository,
+		infra.GitRepository,
+		infra.SoupRepository)
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {

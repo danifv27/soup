@@ -13,5 +13,5 @@ type Git interface {
 }
 
 type Config interface {
-	GetSoupInfo(path string) (SoupInfo, error)
+	GetSoupInfo(root string) SoupInfo
 }

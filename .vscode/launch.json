@@ -22,11 +22,11 @@
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/soup",
             "env": {
-                "SOUP_SYNC_TOKEN": "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"
+                "SOUP_SYNC_TOKEN": "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"
             },
             "args": [
                 "sync",
-                "https://github.com/danifv27/goHelloWorld.git",
+                "https://github.com/danifv27/helloDeploy.git",
                 "as",
                 "dummy",
                 "withtoken",

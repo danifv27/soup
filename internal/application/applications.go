@@ -39,7 +39,11 @@ type Applications struct {
 }
 
 // NewApplications Bootstraps Application Layer dependencies
-func NewApplications(logger logger.Logger, notifier notification.Notifier, version soup.Version, git soup.Git) Applications {
+func NewApplications(logger logger.Logger,
+	notifier notification.Notifier,
+	version soup.Version,
+	git soup.Git,
+	config soup.Config) Applications {
 
 	return Applications{
 		LoggerService: logger,
@@ -49,7 +53,7 @@ func NewApplications(logger logger.Logger, notifier notification.Notifier, versi
 		},
 		Commands: Commands{
 			PrintVersion: commands.NewPrintVersionRequestHandler(version, notifier),
-			LoopBranches: commands.NewLoopBranchesRequestHandler(git, logger),
+			LoopBranches: commands.NewLoopBranchesRequestHandler(git, config, logger),
 		},
 	}
 }
