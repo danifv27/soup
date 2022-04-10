@@ -6,12 +6,15 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/kong"
+
+	"github.com/danifv27/soup/internal/application"
+	"github.com/danifv27/soup/internal/infrastructure"
 )
 
 type CLI struct {
 	Globals `envprefix:"SOUP_"`
 	Version VersionCmd `cmd:"" help:"Show the version information" envprefix:"SOUP_VERSION_"`
-	Sync    SyncCmd    `cmd:"" help:"Reconcile kubernetes and vcs" envprefix:"SOUP_SYNC_"`
+	Sync    SyncCmd    `cmd:"" help:"Reconcile kubernetes with vcs contents" envprefix:"SOUP_SYNC_"`
 }
 
 type Globals struct {
@@ -25,7 +28,18 @@ func main() {
 	cli := CLI{}
 	bin := filepath.Base(os.Args[0])
 
+	infra := infrastructure.NewAdapters()
+	infra.LoggerService.SetLevel(cli.Globals.Logging.Level)
+	infra.LoggerService.SetFormat(cli.Globals.Logging.Format)
+
+	apps := application.NewApplications(infra.LoggerService,
+		infra.NotificationService,
+		infra.VersionRepository,
+		infra.GitRepository,
+		infra.SoupRepository)
+
 	ctx := kong.Parse(&cli,
+		kong.Bind(apps),
 		kong.Name(bin),
 		kong.Description("GitOps operator for Kubernetes"),
 		kong.UsageOnError(),

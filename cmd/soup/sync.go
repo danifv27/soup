@@ -10,11 +10,20 @@ import (
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 )
 
+// type hostFlag string
+
+// func (d hostFlag) BeforeApply(logger *logger.Logger) error {
+// 	logger.SetOutput(os.Stdout)
+// 	return nil
+// }
+
 type SyncCmd struct {
-	Repo struct {
-		Repo     string `arg:"" help:"repo to sync"`
-		Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
-		As       struct {
+	Host       string `help:"if not set, kubeconfig auth will be used. If using kubectl proxy - set it to http://localhost:8001"`
+	Kubeconfig string `help:"path to the kubeconfig file to use for requests"`
+	Repo       struct {
+		Repo string `arg:"" help:"repo to sync"`
+		// Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
+		As struct {
 			Username struct {
 				Username  string `arg:"" help:"username" env:"SOUP_SYNC_USERNAME" optional:""`
 				Withtoken struct {
@@ -25,18 +34,9 @@ type SyncCmd struct {
 	} `arg:""`
 }
 
-func (cmd *SyncCmd) Run(cli *CLI) error {
-	var apps application.Applications
-
-	infra := infrastructure.NewAdapters()
-	infra.LoggerService.SetLevel(cli.Globals.Logging.Level)
-	infra.LoggerService.SetFormat(cli.Globals.Logging.Format)
-
-	apps = application.NewApplications(infra.LoggerService,
-		infra.NotificationService,
-		infra.VersionRepository,
-		infra.GitRepository,
-		infra.SoupRepository)
+func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications) error {
+	apps.LoggerService.SetLevel(cli.Globals.Logging.Level)
+	apps.LoggerService.SetFormat(cli.Globals.Logging.Format)
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {
