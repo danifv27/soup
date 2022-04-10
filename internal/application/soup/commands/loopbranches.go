@@ -6,6 +6,8 @@ import (
 
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/domain/soup"
+	"sigs.k8s.io/kustomize/api/filesys"
+	"sigs.k8s.io/kustomize/api/krusty"
 )
 
 type LoopBranchesRequest struct {
@@ -67,14 +69,31 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 		}
 		// Process branch
 		info = h.config.GetSoupInfo(cloneLocation)
-		h.logger.WithFields(logger.Fields{
-			"info": info,
-		}).Info("soup.yaml parsed")
-		// err = processBranch(branchName)
-		// if err != nil {
-		// 	fmt.Println("Error processing branch")
-		// 	panic(err)
-		// }
+		// h.logger.WithFields(logger.Fields{
+		// 	"info": info,
+		// }).Info("soup.yaml parsed")
+		fSys := filesys.MakeFsOnDisk()
+		kst := krusty.MakeKustomizer(
+			HonorKustomizeFlags(krusty.MakeDefaultOptions()),
+		)
+		for _, k := range info.Kustomizations {
+			m, err := kst.Run(fSys, fmt.Sprintf("%s/%s", info.Root, k.Overlay))
+			if err != nil {
+				return err
+			}
+			for _, r := range m.Resources() {
+				yml, err := r.AsYAML()
+				if err != nil {
+					return err
+				}
+				// os.Stdout.Write(yml)
+				err = deployment.Deploy(command.Path, k.Namespace, yml)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
 	}
 	// os.RemoveAll(cloneLocation)
 
