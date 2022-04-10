@@ -85,17 +85,17 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 			if err != nil {
 				return err
 			}
-			yml, err := m.AsYaml()
-			if err != nil {
-				return err
+			for _, r := range m.Resources() {
+				yml, err := r.AsYAML()
+				if err != nil {
+					return err
+				}
+				os.Stdout.Write(yml)
+				err = deployment.Deploy(command.Path, k.Namespace, yml)
+				if err != nil {
+					return err
+				}
 			}
-			err = deployment.Deploy(command.Path, k.Namespace, yml)
-			if err != nil {
-				return err
-			}
-			h.logger.WithFields(logger.Fields{
-				"kustomization": yml,
-			}).Debug("deployed kustomization")
 		}
 
 	}
