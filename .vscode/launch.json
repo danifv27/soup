@@ -23,13 +23,15 @@
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/soup",
             "env": {
-                "SOUP_SYNC_TOKEN": "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"
+                "SOUP_SYNC_TOKEN": "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"
             },
             "args": [
                 "sync",
+                "--path",
+                "http://localhost:8001",
                 "https://github.com/danifv27/helloDeploy.git",
                 "as",
-                "dummy",
+                "danifv27",
                 "withtoken",
                 "--logging.level=debug",
             ],
@@ -84,7 +86,7 @@
                 "as",
                 "fraildan",
                 "withtoken",
-                "NDg2NTIyMTcxNTM0Ou+gEeRZwIbR/cbwt3kDIxOU+eGc",
+                "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",
                 "--log-level",
                 "debug"
             ],

@@ -11,10 +11,11 @@ import (
 )
 
 type SyncCmd struct {
+	Path string `help:"path to the kubeconfig file to use for requests or host url"`
 	Repo struct {
-		Repo     string `arg:"" help:"repo to sync"`
-		Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
-		As       struct {
+		Repo string `arg:"" help:"repo to sync"`
+		// Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
+		As struct {
 			Username struct {
 				Username  string `arg:"" help:"username" env:"SOUP_SYNC_USERNAME" optional:""`
 				Withtoken struct {
@@ -25,18 +26,9 @@ type SyncCmd struct {
 	} `arg:""`
 }
 
-func (cmd *SyncCmd) Run(cli *CLI) error {
-	var apps application.Applications
-
-	infra := infrastructure.NewAdapters()
-	infra.LoggerService.SetLevel(cli.Globals.Logging.Level)
-	infra.LoggerService.SetFormat(cli.Globals.Logging.Format)
-
-	apps = application.NewApplications(infra.LoggerService,
-		infra.NotificationService,
-		infra.VersionRepository,
-		infra.GitRepository,
-		infra.SoupRepository)
+func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications) error {
+	apps.LoggerService.SetLevel(cli.Globals.Logging.Level)
+	apps.LoggerService.SetFormat(cli.Globals.Logging.Format)
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {
@@ -44,9 +36,9 @@ func (cmd *SyncCmd) Run(cli *CLI) error {
 
 		req := commands.LoopBranchesRequest{
 			URL:      cli.Sync.Repo.Repo,
-			Period:   cli.Sync.Repo.Interval,
 			Token:    cli.Sync.Repo.As.Username.Withtoken.Withtoken,
 			Username: cli.Sync.Repo.As.Username.Username,
+			Path:     cli.Sync.Path,
 		}
 		err = apps.Commands.LoopBranches.Handle(req)
 

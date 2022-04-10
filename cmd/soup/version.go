@@ -14,22 +14,10 @@ type VersionCmd struct {
 	Format string `short:"f" help:"Format the output (pretty|json)." enum:"pretty,json" default:"pretty"`
 }
 
-func (cmd *VersionCmd) Run(cli *CLI) error {
-	// var info *queries.GetVersionInfoResult
-	// var err error
-	// var out []byte
-	var apps application.Applications
-	// var notif notification.Notification
+func (cmd *VersionCmd) Run(cli *CLI, apps application.Applications) error {
 
-	infra := infrastructure.NewAdapters()
-	infra.LoggerService.SetLevel(cli.Globals.Logging.Level)
-	infra.LoggerService.SetFormat(cli.Globals.Logging.Format)
-
-	apps = application.NewApplications(infra.LoggerService,
-		infra.NotificationService,
-		infra.VersionRepository,
-		infra.GitRepository,
-		infra.SoupRepository)
+	apps.LoggerService.SetLevel(cli.Globals.Logging.Level)
+	apps.LoggerService.SetFormat(cli.Globals.Logging.Format)
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {
@@ -49,7 +37,6 @@ func (cmd *VersionCmd) Run(cli *CLI) error {
 	})
 
 	ports := infrastructure.NewPorts(apps, &h)
-	// infra.LoggerService.Debug("debug message test")
 
 	ports.MainLoop.Exec()
 
