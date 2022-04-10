@@ -10,17 +10,9 @@ import (
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 )
 
-// type hostFlag string
-
-// func (d hostFlag) BeforeApply(logger *logger.Logger) error {
-// 	logger.SetOutput(os.Stdout)
-// 	return nil
-// }
-
 type SyncCmd struct {
-	Host       string `help:"if not set, kubeconfig auth will be used. If using kubectl proxy - set it to http://localhost:8001"`
-	Kubeconfig string `help:"path to the kubeconfig file to use for requests"`
-	Repo       struct {
+	Path string `help:"path to the kubeconfig file to use for requests or host url"`
+	Repo struct {
 		Repo string `arg:"" help:"repo to sync"`
 		// Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
 		As struct {
@@ -44,9 +36,9 @@ func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications) error {
 
 		req := commands.LoopBranchesRequest{
 			URL:      cli.Sync.Repo.Repo,
-			Period:   cli.Sync.Repo.Interval,
 			Token:    cli.Sync.Repo.As.Username.Withtoken.Withtoken,
 			Username: cli.Sync.Repo.As.Username.Username,
+			Path:     cli.Sync.Path,
 		}
 		err = apps.Commands.LoopBranches.Handle(req)
 

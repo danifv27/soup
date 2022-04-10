@@ -32,5 +32,7 @@ func (s SoupRepo) GetSoupInfo(root string) soup.SoupInfo {
 		return soup.SoupInfo{}
 	}
 
+	s.soupinfo.Root = root
+
 	return s.soupinfo
 }

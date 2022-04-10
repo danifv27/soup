@@ -28,6 +28,7 @@ func (v VersionInfo) String() string {
 
 type SoupInfo struct {
 	Kustomizations []Kustomization `yaml:"kustomizations"`
+	Root           string
 }
 
 type Kustomization struct {

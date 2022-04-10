@@ -26,6 +26,8 @@
             },
             "args": [
                 "sync",
+                "--path",
+                "http://localhost:8001",
                 "https://github.com/danifv27/helloDeploy.git",
                 "as",
                 "danifv27",
