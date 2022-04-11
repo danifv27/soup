@@ -12,8 +12,6 @@ import (
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/deployment"
 	"github.com/danifv27/soup/internal/domain/soup"
-	"sigs.k8s.io/kustomize/api/filesys"
-	"sigs.k8s.io/kustomize/api/krusty"
 )
 
 type LoopBranchesRequest struct {
@@ -75,9 +73,6 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 		}
 		// Process branch
 		info = h.config.GetSoupInfo(cloneLocation)
-		// h.logger.WithFields(logger.Fields{
-		// 	"info": info,
-		// }).Info("soup.yaml parsed")
 		fSys := filesys.MakeFsOnDisk()
 		kst := krusty.MakeKustomizer(
 			HonorKustomizeFlags(krusty.MakeDefaultOptions()),

@@ -1,0 +1,48 @@
+package queries
+
+import (
+	"fmt"
+
+	"github.com/danifv27/soup/internal/domain/soup"
+)
+
+type GetLivenessInfoResult struct {
+	Result soup.ProbeResultType
+	Msg    string
+}
+
+func (v GetLivenessInfoResult) String() string {
+
+	return fmt.Sprintf("%d - %s)", v.Result, v.Msg)
+}
+
+//GetCragRequestHandler provides an interfaces to handle a GetCragRequest and return a *GetCragResult
+type GetLivenessInfoHandler interface {
+	Handle() (GetLivenessInfoResult, error)
+}
+
+type getLivenessInfoHandler struct {
+	probesrepo soup.Probe
+}
+
+//NewGetCragRequestHandler Handler Constructor
+func NewGetLivenessInfoHandler(repo soup.Probe) GetLivenessInfoHandler {
+
+	return getLivenessInfoHandler{probesrepo: repo}
+}
+
+//Handle Handlers the GetLivenessInfo query
+func (h getLivenessInfoHandler) Handle() (GetLivenessInfoResult, error) {
+	var info soup.ProbeInfo
+	var err error
+
+	if info, err = h.probesrepo.GetLivenessInfo(); err != nil {
+		return GetLivenessInfoResult{}, err
+	}
+	result := GetLivenessInfoResult{
+		Result: info.Result,
+		Msg:    info.Msg,
+	}
+
+	return result, nil
+}

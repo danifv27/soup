@@ -21,7 +21,8 @@ import (
 
 //Queries operations that request data
 type Queries struct {
-	GetVersionInfoHandler queries.GetVersionInfoHandler
+	GetVersionInfoHandler  queries.GetVersionInfoHandler
+	GetLivenessInfoHandler queries.GetLivenessInfoHandler
 }
 
 //Commands operations that accept data to make a change or trigger an action
@@ -43,13 +44,15 @@ func NewApplications(logger logger.Logger,
 	notifier notification.Notifier,
 	version soup.Version,
 	git soup.Git,
-	config soup.Config) Applications {
+	config soup.Config,
+	probes soup.Probe) Applications {
 
 	return Applications{
 		LoggerService: logger,
 		Notifier:      notifier,
 		Queries: Queries{
-			GetVersionInfoHandler: queries.NewGetVersionInfoHandler(version),
+			GetVersionInfoHandler:  queries.NewGetVersionInfoHandler(version),
+			GetLivenessInfoHandler: queries.NewGetLivenessInfoHandler(probes),
 		},
 		Commands: Commands{
 			PrintVersion: commands.NewPrintVersionRequestHandler(version, notifier),

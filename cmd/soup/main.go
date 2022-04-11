@@ -36,7 +36,8 @@ func main() {
 		infra.NotificationService,
 		infra.VersionRepository,
 		infra.GitRepository,
-		infra.SoupRepository)
+		infra.SoupRepository,
+		infra.ProbeRepository)
 
 	ctx := kong.Parse(&cli,
 		kong.Bind(apps),

@@ -51,6 +51,7 @@ func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications) error {
 
 	ports := infrastructure.NewPorts(apps, &h)
 	ports.MainLoop.Exec()
+	ports.Actuators.Start(":8081")
 
 	return nil
 }

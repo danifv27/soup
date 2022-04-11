@@ -24,6 +24,7 @@ import (
 	"github.com/danifv27/soup/internal/infrastructure/git"
 	"github.com/danifv27/soup/internal/infrastructure/logger/logrus"
 	"github.com/danifv27/soup/internal/infrastructure/notification/console"
+	"github.com/danifv27/soup/internal/infrastructure/status"
 	"github.com/danifv27/soup/internal/infrastructure/storage/config"
 	"github.com/danifv27/soup/internal/infrastructure/storage/embed"
 )
@@ -35,6 +36,7 @@ type Adapters struct {
 	VersionRepository   soup.Version
 	GitRepository       soup.Git
 	SoupRepository      soup.Config
+	ProbeRepository     soup.Probe
 }
 
 func NewAdapters() Adapters {
@@ -43,9 +45,10 @@ func NewAdapters() Adapters {
 	c := config.NewSoupRepo(".")
 	return Adapters{
 		LoggerService:       l,
-		VersionRepository:   embed.NewVersionRepo(),
 		NotificationService: console.NewNotificationService(),
+		VersionRepository:   embed.NewVersionRepo(),
 		GitRepository:       &r,
 		SoupRepository:      c,
+		ProbeRepository:     status.NewProbeRepo(),
 	}
 }

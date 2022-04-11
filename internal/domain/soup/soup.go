@@ -36,3 +36,17 @@ type Kustomization struct {
 	Branch    string `yaml:"branch"`
 	Overlay   string `yaml:"overlay"`
 }
+
+type ProbeResultType int
+
+const (
+	Healthy ProbeResultType = iota
+	Unhealthy
+	Ready
+	NotReady
+)
+
+type ProbeInfo struct {
+	Result ProbeResultType
+	Msg    string
+}

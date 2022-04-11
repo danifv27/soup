@@ -15,3 +15,7 @@ type Git interface {
 type Config interface {
 	GetSoupInfo(root string) SoupInfo
 }
+
+type Probe interface {
+	GetLivenessInfo() (ProbeInfo, error)
+}

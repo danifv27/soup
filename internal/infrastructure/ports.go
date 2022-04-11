@@ -9,17 +9,20 @@ import (
 	"github.com/danifv27/soup/internal/application"
 	señales "github.com/danifv27/soup/internal/application/signals"
 	"github.com/danifv27/soup/internal/infrastructure/executor"
+	"github.com/danifv27/soup/internal/infrastructure/rest"
 )
 
 //Ports contains the ports services
 type Ports struct {
-	MainLoop executor.Loop
+	MainLoop  executor.Loop
+	Actuators *rest.Server
 }
 
 //NewServices instantiates the services of input ports
 func NewPorts(apps application.Applications, handler señales.SignalHandler) Ports {
 
 	return Ports{
-		MainLoop: executor.NewLoop(apps, handler),
+		MainLoop:  executor.NewLoop(apps, handler),
+		Actuators: rest.NewServer(apps),
 	}
 }
