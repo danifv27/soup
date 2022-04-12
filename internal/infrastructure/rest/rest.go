@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"sync"
 	"syscall"
 	"time"
 
@@ -38,10 +39,10 @@ func (s *Server) addProbeRoutes() {
 	const probesHTTPRoutePath = "/probes"
 
 	s.router.HandleFunc(probesHTTPRoutePath+"/liveness", probes.NewHandler(s.apps).GetLiveness).Methods("GET")
-	s.router.HandleFunc(probesHTTPRoutePath+"/health", probes.NewHandler(s.apps).GetReadiness).Methods("GET")
+	s.router.HandleFunc(probesHTTPRoutePath+"/readiness", probes.NewHandler(s.apps).GetReadiness).Methods("GET")
 }
 
-func (s *Server) Start(address string) {
+func (s *Server) Start(address string, wg *sync.WaitGroup) {
 
 	s.httpServer = &http.Server{
 		Addr:    address,
@@ -68,7 +69,7 @@ func (s *Server) Start(address string) {
 	})
 
 	loop := executor.NewLoop(s.apps, &h)
-	loop.Exec()
+	loop.Exec(wg)
 }
 
 func (s *Server) Shutdown() {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"sync"
 	"syscall"
 
 	"github.com/danifv27/soup/internal/application"
@@ -51,8 +52,10 @@ func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications) error {
 	})
 
 	ports := infrastructure.NewPorts(apps, &h)
-	ports.MainLoop.Exec()
-	ports.Actuators.Start(cli.Sync.Actuator)
+	wg := &sync.WaitGroup{}
+	ports.Actuators.Start(cli.Sync.Actuator, wg)
+	ports.MainLoop.Exec(wg)
+	wg.Wait()
 
 	return nil
 }

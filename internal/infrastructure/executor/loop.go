@@ -9,30 +9,31 @@ import (
 
 //Loop Represents the signaled command execution
 type Loop struct {
-	Apps       application.Applications
-	SigHandler señales.SignalHandler
+	apps       application.Applications
+	sigHandler señales.SignalHandler
 }
 
 //NewLoop version command main loop
 func NewLoop(apps application.Applications, handler señales.SignalHandler) Loop {
 
 	loop := Loop{
-		Apps:       apps,
-		SigHandler: handler,
+		apps:       apps,
+		sigHandler: handler,
 	}
 
 	return loop
 }
 
-func (l *Loop) Exec() {
+func (l *Loop) Exec(wg *sync.WaitGroup) {
 
-	wg := &sync.WaitGroup{}
+	// wg := &sync.WaitGroup{}
 	wg.Add(1)
 
 	go func() {
-		l.SigHandler.Run()
+		l.apps.LoggerService.Debug("starting executor")
+		l.sigHandler.Run()
 		wg.Done()
 	}()
 
-	wg.Wait()
+	// wg.Wait()
 }
