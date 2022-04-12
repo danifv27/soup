@@ -11,8 +11,9 @@ import (
 )
 
 type SyncCmd struct {
-	Path string `help:"path to the kubeconfig file to use for requests or host url"`
-	Repo struct {
+	Path     string `help:"path to the kubeconfig file to use for requests or host url" env: "SOUP_SYNC_PATH"`
+	Actuator string `help:"actuator port" default:":8081" env:"SOUP_SYNC_ACTUATOR" optional:"" hidden:""`
+	Repo     struct {
 		Repo string `arg:"" help:"repo to sync"`
 		// Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
 		As struct {
@@ -51,7 +52,7 @@ func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications) error {
 
 	ports := infrastructure.NewPorts(apps, &h)
 	ports.MainLoop.Exec()
-	ports.Actuators.Start(":8081")
+	ports.Actuators.Start(cli.Sync.Actuator)
 
 	return nil
 }
