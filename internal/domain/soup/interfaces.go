@@ -10,6 +10,7 @@ type Git interface {
 	GetBranchNames(username string, token string) ([]string, error)
 	Fetch(username string, token string) error
 	Checkout(branchName string) error
+	LsRemote(url string, username string, token string) error
 }
 
 type Config interface {
@@ -18,4 +19,5 @@ type Config interface {
 
 type Probe interface {
 	GetLivenessInfo() (ProbeInfo, error)
+	GetReadinessInfo() (ProbeInfo, error)
 }

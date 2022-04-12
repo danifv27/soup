@@ -31,3 +31,18 @@ func (c Handler) GetLiveness(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 }
+
+//GetReadiness Returns liveness status
+func (c Handler) GetReadiness(w http.ResponseWriter, _ *http.Request) {
+	info, err := c.apps.Queries.GetReadinessInfoHandler.Handle()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, err.Error())
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(info)
+	if err != nil {
+		return
+	}
+}

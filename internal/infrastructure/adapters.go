@@ -49,6 +49,6 @@ func NewAdapters() Adapters {
 		VersionRepository:   embed.NewVersionRepo(),
 		GitRepository:       &r,
 		SoupRepository:      c,
-		ProbeRepository:     status.NewProbeRepo(),
+		ProbeRepository:     status.NewProbeRepo(&r),
 	}
 }

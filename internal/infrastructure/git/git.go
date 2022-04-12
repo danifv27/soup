@@ -9,6 +9,7 @@ import (
 	config "github.com/go-git/go-git/v5/config"
 	plumbing "github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	memory "github.com/go-git/go-git/v5/storage/memory"
 	"github.com/pkg/errors"
 )
 
@@ -127,6 +128,34 @@ func (g *GitRepo) Checkout(branchName string) error {
 	})
 	if err != nil {
 		return errors.Wrap(err, "checkout")
+	}
+
+	return nil
+}
+
+func (g *GitRepo) LsRemote(url string, username string, token string) error {
+
+	if username == "" {
+		username = "dummy"
+	}
+	g.logger.WithFields(logger.Fields{
+		"url":      url,
+		"token":    token,
+		"username": username,
+	}).Debug("ls-remote repository")
+	// // Authentication
+	// auth := http.BasicAuth{
+	// 	Username: username,
+	// 	Password: token,
+	// }
+	// Create the remote with repository URL
+	rem := gogit.NewRemote(memory.NewStorage(), &config.RemoteConfig{
+		Name: "origin",
+		URLs: []string{url},
+	})
+
+	if _, err := rem.List(&gogit.ListOptions{}); err != nil {
+		return errors.Wrap(err, "LsRemote")
 	}
 
 	return nil

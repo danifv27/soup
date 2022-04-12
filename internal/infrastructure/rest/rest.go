@@ -37,7 +37,8 @@ func NewServer(apps application.Applications) *Server {
 func (s *Server) addProbeRoutes() {
 	const probesHTTPRoutePath = "/probes"
 
-	s.router.HandleFunc(probesHTTPRoutePath, probes.NewHandler(s.apps).GetLiveness).Methods("GET")
+	s.router.HandleFunc(probesHTTPRoutePath+"/liveness", probes.NewHandler(s.apps).GetLiveness).Methods("GET")
+	s.router.HandleFunc(probesHTTPRoutePath+"/health", probes.NewHandler(s.apps).GetReadiness).Methods("GET")
 }
 
 func (s *Server) Start(address string) {
@@ -49,6 +50,7 @@ func (s *Server) Start(address string) {
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, s.apps.LoggerService)
 	h.SetRunFunc(func() error {
+		s.apps.LoggerService.Infof("starting actuators on %s", address)
 		err := s.httpServer.ListenAndServe() // Blocks!
 		if err != http.ErrServerClosed {
 			s.apps.LoggerService.With("err", err).Error("http server stopped unexpected")

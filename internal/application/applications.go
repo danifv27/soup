@@ -21,8 +21,9 @@ import (
 
 //Queries operations that request data
 type Queries struct {
-	GetVersionInfoHandler  queries.GetVersionInfoHandler
-	GetLivenessInfoHandler queries.GetLivenessInfoHandler
+	GetVersionInfoHandler   queries.GetVersionInfoHandler
+	GetLivenessInfoHandler  queries.GetLivenessInfoHandler
+	GetReadinessInfoHandler queries.GetReadinessInfoHandler
 }
 
 //Commands operations that accept data to make a change or trigger an action
@@ -51,8 +52,9 @@ func NewApplications(logger logger.Logger,
 		LoggerService: logger,
 		Notifier:      notifier,
 		Queries: Queries{
-			GetVersionInfoHandler:  queries.NewGetVersionInfoHandler(version),
-			GetLivenessInfoHandler: queries.NewGetLivenessInfoHandler(probes),
+			GetVersionInfoHandler:   queries.NewGetVersionInfoHandler(version),
+			GetLivenessInfoHandler:  queries.NewGetLivenessInfoHandler(probes),
+			GetReadinessInfoHandler: queries.NewGetReadinessInfoHandler(probes, git),
 		},
 		Commands: Commands{
 			PrintVersion: commands.NewPrintVersionRequestHandler(version, notifier),
