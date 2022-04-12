@@ -89,19 +89,19 @@ func (h *Handler) Run() error {
 		}
 
 		h.Logger.Debug(fmt.Sprintf("Received shutdown signal: %s", sigHupOrTerm))
-		h.Logger.Debug("Calling shutdown handler")
+		// h.Logger.Debug("Calling shutdown handler")
 		shutdownErr.set(h.ShutdownFunc(sigHupOrTerm))
-		h.Logger.Debug("Shutdown handler complete")
+		// h.Logger.Debug("Shutdown handler complete")
 
 		if shutdownErr.read() != nil {
 			h.Logger.Error(errors.Wrap(shutdownErr.read(), "Shutdown handler failed"))
 		}
 	}()
 
-	h.Logger.Debug("Calling run handler")
+	// h.Logger.Debug("Calling run handler")
 	runErr = h.RunFunc()
 	runComplete.setTrue()
-	h.Logger.Debug("Run handler complete")
+	// h.Logger.Debug("Run handler complete")
 
 	if runErr != nil {
 		h.Logger.Error(errors.Wrap(runErr, "Run handler failed"))

@@ -35,7 +35,7 @@ func (m ProbeRepo) GetReadinessInfo() (soup.ProbeInfo, error) {
 	err := m.gitrepo.LsRemote("https://github.com/danifv27/helloDeploy.git", "danifv27", "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")
 	if err != nil {
 		i.Result = soup.Unhealthy
-		i.Msg = "ls-remote failed"
+		i.Msg = err.Error()
 	} else {
 		i.Result = soup.Healthy
 		i.Msg = "System Ready"
