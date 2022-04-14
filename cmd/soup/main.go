@@ -40,7 +40,7 @@ func main() {
 	)
 
 	infra := infrastructure.NewAdapters()
-	infra.GitRepository.InitRepo(cli.Sync.Repo.Repo,
+	infra.GitRepository.Init(cli.Sync.Repo.Repo,
 		cli.Sync.Repo.As.Username.Username,
 		cli.Sync.Repo.As.Username.Withtoken.Withtoken)
 

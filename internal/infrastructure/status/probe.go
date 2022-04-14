@@ -1,6 +1,7 @@
 package status
 
 import (
+	"github.com/danifv27/soup/internal/deployment"
 	"github.com/danifv27/soup/internal/domain/soup"
 )
 
@@ -32,14 +33,20 @@ func (m ProbeRepo) GetReadinessInfo() (soup.ProbeInfo, error) {
 
 	i := new(soup.ProbeInfo)
 
-	err := m.gitrepo.LsRemote()
-	if err != nil {
+	if err := m.gitrepo.LsRemote(); err != nil {
 		i.Result = soup.Unhealthy
 		i.Msg = err.Error()
-	} else {
-		i.Result = soup.Healthy
-		i.Msg = "System Ready"
+		return *i, err
 	}
+
+	if err := deployment.Ping("http://localhost:8001"); err != nil {
+		i.Result = soup.Unhealthy
+		i.Msg = err.Error()
+		return *i, err
+	}
+
+	i.Result = soup.Healthy
+	i.Msg = "System Ready"
 
 	return *i, nil
 }

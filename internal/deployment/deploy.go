@@ -6,7 +6,6 @@ import (
 	"net/url"
 
 	"github.com/danifv27/soup/pkg/k8s"
-	"github.com/pkg/errors"
 	krest "k8s.io/client-go/rest"
 	kcmd "k8s.io/client-go/tools/clientcmd"
 )
@@ -47,13 +46,12 @@ func clusterConfig(path string) (*krest.Config, error) {
 func Deploy(path string, namespace string, yaml []byte) error {
 	config, err := clusterConfig(path)
 	if err != nil {
-		errors.Wrap(err, "deploy")
-		return err
+		return fmt.Errorf("deploy: %w", err)
 	}
 	ctx := context.TODO()
 	err = k8s.DoSSA(ctx, config, namespace, yaml)
 	if err != nil {
-		return errors.Wrap(err, "deploy")
+		return fmt.Errorf("deploy: %w", err)
 	}
 
 	return nil

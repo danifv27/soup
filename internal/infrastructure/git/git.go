@@ -11,7 +11,6 @@ import (
 	plumbing "github.com/go-git/go-git/v5/plumbing"
 	transport "github.com/go-git/go-git/v5/plumbing/transport/http"
 	memory "github.com/go-git/go-git/v5/storage/memory"
-	"github.com/pkg/errors"
 )
 
 type GitRepo struct {
@@ -48,7 +47,7 @@ func (g *GitRepo) PlainClone(location string) error {
 	var r *gogit.Repository
 
 	if g.info == nil {
-		return errors.Wrap(fmt.Errorf("git repo not initialized"), "PlainClone")
+		return fmt.Errorf("plainclone: git repo not initialized")
 	}
 	g.logger.WithFields(logger.Fields{
 		"location": location,
@@ -63,8 +62,7 @@ func (g *GitRepo) PlainClone(location string) error {
 		Auth: &auth,
 		URL:  g.info.Url,
 	}); err != nil {
-
-		return errors.Wrap(err, "plainclone")
+		return fmt.Errorf("plainclone: %w", err)
 	}
 
 	g.repo = r
@@ -76,14 +74,15 @@ func (g *GitRepo) GetBranchNames() ([]string, error) {
 	var branchNames []string
 
 	if g.info == nil {
-		return nil, errors.Wrap(fmt.Errorf("git repo not initialized"), "GetBranchNames")
+		return nil, fmt.Errorf("getBranchNames: git repo not initialized")
 	}
 	if g.repo == nil {
-		return nil, fmt.Errorf("git repository not cloned")
+		return nil, fmt.Errorf("getBranchNames: git repository not cloned")
 	}
 	remote, err := g.repo.Remote("origin")
 	if err != nil {
-		return nil, errors.Wrap(err, "remote")
+
+		return nil, fmt.Errorf("getBranchNames: %w", err)
 	}
 	auth := transport.BasicAuth{
 		Username: g.info.Username,
@@ -93,7 +92,7 @@ func (g *GitRepo) GetBranchNames() ([]string, error) {
 		Auth: &auth,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "remote listing")
+		return nil, fmt.Errorf("getBranchNames: %w", err)
 	}
 	refPrefix := "refs/heads/"
 	for _, ref := range refList {
@@ -111,7 +110,7 @@ func (g *GitRepo) GetBranchNames() ([]string, error) {
 func (g *GitRepo) Fetch() error {
 
 	if g.info == nil {
-		return errors.Wrap(fmt.Errorf("git repo not initialized"), "Fetch")
+		return fmt.Errorf("fetch: git repo not initialized")
 	}
 	auth := transport.BasicAuth{
 		Username: g.info.Username,
@@ -123,7 +122,7 @@ func (g *GitRepo) Fetch() error {
 		RefSpecs: []config.RefSpec{"refs/*:refs/*", "HEAD:refs/heads/HEAD"},
 	})
 	if err != nil {
-		return errors.Wrap(err, "fetch")
+		return fmt.Errorf("fetch: %w", err)
 	}
 
 	return nil
@@ -135,7 +134,7 @@ func (g *GitRepo) Checkout(branchName string) error {
 
 	if g.worktree == nil {
 		if g.worktree, err = g.repo.Worktree(); err != nil {
-			return errors.Wrap(err, "can not create workspace")
+			return fmt.Errorf("checkout: %w", err)
 		}
 	}
 	err = g.worktree.Checkout(&gogit.CheckoutOptions{
@@ -143,7 +142,7 @@ func (g *GitRepo) Checkout(branchName string) error {
 		Force:  true,
 	})
 	if err != nil {
-		return errors.Wrap(err, "checkout")
+		return fmt.Errorf("checkout: %w", err)
 	}
 
 	return nil
@@ -154,7 +153,7 @@ func (g *GitRepo) LsRemote() error {
 	var err error
 
 	if g.info == nil {
-		return errors.Wrap(fmt.Errorf("git repo not initialized"), "LsRemote")
+		return fmt.Errorf("lsremote: git repo not initialized")
 	}
 	g.logger.WithFields(logger.Fields{
 		"info": g.info,
@@ -173,7 +172,7 @@ func (g *GitRepo) LsRemote() error {
 	if remotes, err = rem.List(&gogit.ListOptions{
 		Auth: &auth,
 	}); err != nil {
-		return errors.Wrap(err, "LsRemote")
+		return fmt.Errorf("lsremote: %w", err)
 	}
 	g.logger.WithFields(logger.Fields{
 		"remotes": remotes,

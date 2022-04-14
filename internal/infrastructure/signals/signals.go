@@ -9,7 +9,6 @@ import (
 
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/application/signals"
-	"github.com/pkg/errors"
 )
 
 type Handler struct {
@@ -94,7 +93,7 @@ func (h *Handler) Run() error {
 		// h.Logger.Debug("Shutdown handler complete")
 
 		if shutdownErr.read() != nil {
-			h.Logger.Error(errors.Wrap(shutdownErr.read(), "Shutdown handler failed"))
+			h.Logger.Error(fmt.Errorf("run: %w", shutdownErr.read()))
 		}
 	}()
 
@@ -104,7 +103,7 @@ func (h *Handler) Run() error {
 	// h.Logger.Debug("Run handler complete")
 
 	if runErr != nil {
-		h.Logger.Error(errors.Wrap(runErr, "Run handler failed"))
+		h.Logger.Error(fmt.Errorf("run: %w", runErr))
 	}
 
 	wg.Wait()
