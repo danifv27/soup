@@ -26,7 +26,7 @@ func NewDeployRepo(l logger.Logger) DeployRepo {
 	}
 }
 
-func (d *DeployRepo) Init(path string) error {
+func (d *DeployRepo) Init(path string, c *string) error {
 	var err error
 
 	if d.info == nil {
@@ -34,7 +34,7 @@ func (d *DeployRepo) Init(path string) error {
 	}
 	d.info.Path = path
 
-	d.config, err = clusterConfig(d.info.Path)
+	d.config, err = clusterConfig(d.info.Path, c)
 	if err != nil {
 		return fmt.Errorf("init: %w", err)
 	}
@@ -57,7 +57,7 @@ func isValidUrl(toTest string) bool {
 	return true
 }
 
-func clusterConfig(path string) (*krest.Config, error) {
+func clusterConfig(path string, context *string) (*krest.Config, error) {
 	var config *krest.Config
 	var err error
 
@@ -65,7 +65,15 @@ func clusterConfig(path string) (*krest.Config, error) {
 		config, err = kcmd.BuildConfigFromFlags(path, "")
 	} else {
 		// creates the rest configuration. If neither masterUrl or kubeconfigPath are passed in we fallback to inClusterConfig
-		config, err = kcmd.BuildConfigFromFlags("", path)
+		if context == nil {
+			config, err = kcmd.BuildConfigFromFlags("", path)
+		} else {
+			rules := kcmd.NewDefaultClientConfigLoadingRules()
+			rules.DefaultClientConfig = &kcmd.DefaultClientConfig
+			overrides := &kcmd.ConfigOverrides{ClusterDefaults: kcmd.ClusterDefaults}
+			overrides.CurrentContext = *context
+			config, err = kcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides).ClientConfig()
+		}
 	}
 	if err != nil {
 		return nil, err

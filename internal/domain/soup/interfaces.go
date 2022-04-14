@@ -24,7 +24,7 @@ type Probe interface {
 }
 
 type Deploy interface {
-	Init(path string) error
+	Init(path string, context *string) error
 	Deploy(namespace string, yaml []byte) error
 	Ping() error
 }

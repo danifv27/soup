@@ -23,11 +23,26 @@ type Globals struct {
 	} `embed:"" prefix:"logging." envprefix:"LOG_"`
 }
 
+type WasSetted struct {
+	contextWasSet bool
+}
+
 func main() {
-	cli := CLI{}
+	var err error
+
+	cli := CLI{
+		Globals: Globals{},
+		Version: VersionCmd{},
+		Sync:    SyncCmd{},
+	}
+	setted := WasSetted{
+		contextWasSet: false,
+	}
+	// cli.Globals.Flags.ContextWasSet = false
 	bin := filepath.Base(os.Args[0])
 
 	ctx := kong.Parse(&cli,
+		kong.Bind(&setted),
 		kong.Name(bin),
 		kong.Description("GitOps operator for Kubernetes"),
 		kong.UsageOnError(),
@@ -43,8 +58,13 @@ func main() {
 	infra.GitRepository.Init(cli.Sync.Repo.Repo,
 		cli.Sync.Repo.As.Username.Username,
 		cli.Sync.Repo.As.Username.Withtoken.Withtoken)
-	infra.DeployRepository.Init(cli.Sync.Path)
-
+	if setted.contextWasSet {
+		c := string(cli.Sync.Context)
+		err = infra.DeployRepository.Init(cli.Sync.Path, &c)
+	} else {
+		err = infra.DeployRepository.Init(cli.Sync.Path, nil)
+	}
+	ctx.FatalIfErrorf(err)
 	apps := application.NewApplications(infra.LoggerService,
 		infra.NotificationService,
 		infra.VersionRepository,
@@ -53,6 +73,6 @@ func main() {
 		infra.SoupRepository,
 		infra.ProbeRepository)
 
-	err := ctx.Run(&cli, apps)
+	err = ctx.Run(&cli, apps)
 	ctx.FatalIfErrorf(err)
 }

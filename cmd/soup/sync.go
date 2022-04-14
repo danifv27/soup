@@ -11,9 +11,19 @@ import (
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 )
 
+type contextStr string
+
+func (f contextStr) BeforeApply(set *WasSetted) error {
+
+	set.contextWasSet = true
+
+	return nil
+}
+
 type SyncCmd struct {
-	Path     string `help:"path to the kubeconfig file to use for requests or host url" env:"SOUP_SYNC_PATH"`
-	Actuator string `help:"actuator port" default:":8081" env:"SOUP_SYNC_ACTUATOR" optional:"" hidden:""`
+	Path     string     `help:"path to the kubeconfig file to use for requests or host url" env:"SOUP_SYNC_K8S_PATH"`
+	Context  contextStr `help:"the name of the kubeconfig context to use" env:"SOUP_SYNC_K8S_CONTEXT"`
+	Actuator string     `help:"actuator port" default:":8081" env:"SOUP_SYNC_ACTUATOR" optional:"" hidden:""`
 	Repo     struct {
 		Repo string `arg:"" help:"repo to sync"`
 		// Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
@@ -28,7 +38,7 @@ type SyncCmd struct {
 	} `arg:""`
 }
 
-func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications) error {
+func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications, f *WasSetted) error {
 	apps.LoggerService.SetLevel(cli.Globals.Logging.Level)
 	apps.LoggerService.SetFormat(cli.Globals.Logging.Format)
 
@@ -39,6 +49,7 @@ func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications) error {
 		req := commands.LoopBranchesRequest{
 			Path: cli.Sync.Path,
 		}
+
 		err = apps.Commands.LoopBranches.Handle(req)
 
 		return err
