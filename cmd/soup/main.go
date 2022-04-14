@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -28,9 +27,22 @@ func main() {
 	cli := CLI{}
 	bin := filepath.Base(os.Args[0])
 
+	ctx := kong.Parse(&cli,
+		kong.Name(bin),
+		kong.Description("GitOps operator for Kubernetes"),
+		kong.UsageOnError(),
+		kong.ConfigureHelp(kong.HelpOptions{
+			Tree: true,
+		}),
+		// kong.Vars{
+		// 	"config_file": fmt.Sprintf("~/.%s", bin),
+		// },
+	)
+
 	infra := infrastructure.NewAdapters()
-	infra.LoggerService.SetLevel(cli.Globals.Logging.Level)
-	infra.LoggerService.SetFormat(cli.Globals.Logging.Format)
+	infra.GitRepository.InitRepo(cli.Sync.Repo.Repo,
+		cli.Sync.Repo.As.Username.Username,
+		cli.Sync.Repo.As.Username.Withtoken.Withtoken)
 
 	apps := application.NewApplications(infra.LoggerService,
 		infra.NotificationService,
@@ -39,18 +51,6 @@ func main() {
 		infra.SoupRepository,
 		infra.ProbeRepository)
 
-	ctx := kong.Parse(&cli,
-		kong.Bind(apps),
-		kong.Name(bin),
-		kong.Description("GitOps operator for Kubernetes"),
-		kong.UsageOnError(),
-		kong.ConfigureHelp(kong.HelpOptions{
-			Tree: true,
-		}),
-		kong.Vars{
-			"config_file": fmt.Sprintf("~/.%s", bin),
-		},
-	)
-	err := ctx.Run(&cli)
+	err := ctx.Run(&cli, apps)
 	ctx.FatalIfErrorf(err)
 }

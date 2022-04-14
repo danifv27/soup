@@ -12,7 +12,7 @@ import (
 )
 
 type SyncCmd struct {
-	Path     string `help:"path to the kubeconfig file to use for requests or host url" env: "SOUP_SYNC_PATH"`
+	Path     string `help:"path to the kubeconfig file to use for requests or host url" env:"SOUP_SYNC_PATH"`
 	Actuator string `help:"actuator port" default:":8081" env:"SOUP_SYNC_ACTUATOR" optional:"" hidden:""`
 	Repo     struct {
 		Repo string `arg:"" help:"repo to sync"`
