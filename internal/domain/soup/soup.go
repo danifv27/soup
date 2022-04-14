@@ -50,3 +50,9 @@ type ProbeInfo struct {
 	Result ProbeResultType
 	Msg    string
 }
+
+type GitInfo struct {
+	Url      string
+	Username string
+	Token    string
+}

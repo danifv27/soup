@@ -32,7 +32,7 @@ func (m ProbeRepo) GetReadinessInfo() (soup.ProbeInfo, error) {
 
 	i := new(soup.ProbeInfo)
 
-	err := m.gitrepo.LsRemote("https://github.com/danifv27/helloDeploy.git", "danifv27", "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")
+	err := m.gitrepo.LsRemote()
 	if err != nil {
 		i.Result = soup.Unhealthy
 		i.Msg = err.Error()

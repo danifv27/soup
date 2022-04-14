@@ -5,16 +5,18 @@ import (
 	"strings"
 
 	"github.com/danifv27/soup/internal/application/logger"
+	"github.com/danifv27/soup/internal/domain/soup"
 	gogit "github.com/go-git/go-git/v5"
 	config "github.com/go-git/go-git/v5/config"
 	plumbing "github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	transport "github.com/go-git/go-git/v5/plumbing/transport/http"
 	memory "github.com/go-git/go-git/v5/storage/memory"
 	"github.com/pkg/errors"
 )
 
 type GitRepo struct {
 	logger   logger.Logger
+	info     *soup.GitInfo
 	repo     *gogit.Repository
 	worktree *gogit.Worktree
 }
@@ -23,6 +25,18 @@ func NewGitRepo(l logger.Logger) GitRepo {
 	return GitRepo{
 		logger: l,
 	}
+}
+
+func (g *GitRepo) InitRepo(url string, username string, token string) error {
+
+	if g.info == nil {
+		g.info = new(soup.GitInfo)
+	}
+	g.info.Url = url
+	g.info.Username = username
+	g.info.Token = token
+
+	return nil
 }
 
 func (g *GitRepo) PlainClone(location string, url string, username string, token string) error {
@@ -39,7 +53,7 @@ func (g *GitRepo) PlainClone(location string, url string, username string, token
 		"username": username,
 	}).Info("Cloning git repository")
 	// Authentication
-	auth := http.BasicAuth{
+	auth := transport.BasicAuth{
 		Username: username,
 		Password: token,
 	}
@@ -69,7 +83,7 @@ func (g *GitRepo) GetBranchNames(username string, token string) ([]string, error
 	if username == "" {
 		username = "dummy"
 	}
-	auth := http.BasicAuth{
+	auth := transport.BasicAuth{
 		Username: username,
 		Password: token,
 	}
@@ -97,7 +111,7 @@ func (g *GitRepo) Fetch(username string, token string) error {
 	if username == "" {
 		username = "dummy"
 	}
-	auth := http.BasicAuth{
+	auth := transport.BasicAuth{
 		Username: username,
 		Password: token,
 	}
@@ -133,30 +147,37 @@ func (g *GitRepo) Checkout(branchName string) error {
 	return nil
 }
 
-func (g *GitRepo) LsRemote(url string, username string, token string) error {
+func (g *GitRepo) LsRemote() error {
+	var remotes []*plumbing.Reference
+	var err error
 
-	if username == "" {
-		username = "dummy"
+	if g.info == nil {
+		return errors.Wrap(fmt.Errorf("git repo not initialized"), "LsRemote")
 	}
 	g.logger.WithFields(logger.Fields{
-		"url":      url,
-		"token":    token,
-		"username": username,
+		"url":      g.info.Url,
+		"token":    g.info.Token,
+		"username": g.info.Username,
 	}).Debug("ls-remote repository")
-	// // Authentication
-	// auth := http.BasicAuth{
-	// 	Username: username,
-	// 	Password: token,
-	// }
+	// Authentication
+	auth := transport.BasicAuth{
+		Username: g.info.Username,
+		Password: g.info.Token,
+	}
 	// Create the remote with repository URL
 	rem := gogit.NewRemote(memory.NewStorage(), &config.RemoteConfig{
 		Name: "origin",
-		URLs: []string{url},
+		URLs: []string{g.info.Url},
 	})
 
-	if _, err := rem.List(&gogit.ListOptions{}); err != nil {
+	if remotes, err = rem.List(&gogit.ListOptions{
+		Auth: &auth,
+	}); err != nil {
 		return errors.Wrap(err, "LsRemote")
 	}
+	g.logger.WithFields(logger.Fields{
+		"remotes": remotes,
+	}).Info("Remote List")
 
 	return nil
 }
