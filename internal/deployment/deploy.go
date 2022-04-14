@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 
 	"github.com/danifv27/soup/pkg/k8s"
@@ -50,11 +51,24 @@ func Deploy(path string, namespace string, yaml []byte) error {
 		return err
 	}
 	ctx := context.TODO()
-	// for _, manifest := range manifests {
 	err = k8s.DoSSA(ctx, config, namespace, yaml)
 	if err != nil {
 		return errors.Wrap(err, "deploy")
 	}
-	// }
+
+	return nil
+}
+
+// Ping
+func Ping(path string) error {
+	config, err := clusterConfig(path)
+	if err != nil {
+		return fmt.Errorf("ping: %w", err)
+	}
+	ctx := context.TODO()
+	err = k8s.DoPing(ctx, config)
+	if err != nil {
+		return fmt.Errorf("ping: %w", err)
+	}
 	return nil
 }

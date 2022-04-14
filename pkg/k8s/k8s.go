@@ -3,6 +3,7 @@ package k8s // import "github.com/caldito/soup/pkg/k8s"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,6 +13,7 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 )
@@ -66,7 +68,26 @@ func DoSSA(ctx context.Context, cfg *rest.Config, namespace string, yamlFile []b
 	//     types.ApplyPatchType indicates SSA.
 	//     FieldManager specifies the field owner ID.
 	_, err = dr.Patch(ctx, obj.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{
-		FieldManager: "sample-controller",
+		FieldManager: "soup-controller",
 	})
 	return err
+}
+
+func DoPing(ctx context.Context, cfg *rest.Config) error {
+
+	client, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return err
+	}
+	path := "/healthz"
+	content, err := client.Discovery().RESTClient().Get().AbsPath(path).DoRaw(ctx)
+	if err != nil {
+		return err
+	}
+	contentStr := string(content)
+	if contentStr != "ok" {
+		return fmt.Errorf("unreachable k8s cluster")
+	}
+
+	return nil
 }

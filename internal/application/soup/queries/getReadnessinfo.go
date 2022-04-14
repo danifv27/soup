@@ -39,14 +39,19 @@ func NewGetReadinessInfoHandler(repo soup.Probe, git soup.Git) GetReadinessInfoH
 func (h getReadnessInfoHandler) Handle() (GetReadinessInfoResult, error) {
 	var info soup.ProbeInfo
 	var err error
+	var result GetReadinessInfoResult
 
 	if info, err = h.probesrepo.GetReadinessInfo(); err != nil {
-		return GetReadinessInfoResult{}, err
-	}
-	result := GetReadinessInfoResult{
-		Result: info.Result,
-		Msg:    info.Msg,
+		result = GetReadinessInfoResult{
+			Result: info.Result,
+			Msg:    info.Msg,
+		}
+	} else {
+		result = GetReadinessInfoResult{
+			Result: info.Result,
+			Msg:    info.Msg,
+		}
 	}
 
-	return result, nil
+	return result, err
 }
