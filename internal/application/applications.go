@@ -45,6 +45,7 @@ func NewApplications(logger logger.Logger,
 	notifier notification.Notifier,
 	version soup.Version,
 	git soup.Git,
+	deploy soup.Deploy,
 	config soup.Config,
 	probes soup.Probe) Applications {
 
@@ -58,7 +59,7 @@ func NewApplications(logger logger.Logger,
 		},
 		Commands: Commands{
 			PrintVersion: commands.NewPrintVersionRequestHandler(version, notifier),
-			LoopBranches: commands.NewLoopBranchesRequestHandler(git, config, logger),
+			LoopBranches: commands.NewLoopBranchesRequestHandler(git, deploy, config, logger),
 		},
 	}
 }

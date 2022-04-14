@@ -26,7 +26,7 @@ func NewGitRepo(l logger.Logger) GitRepo {
 	}
 }
 
-func (g *GitRepo) InitRepo(url string, username string, token string) error {
+func (g *GitRepo) Init(url string, username string, token string) error {
 
 	if g.info == nil {
 		g.info = new(soup.GitInfo)

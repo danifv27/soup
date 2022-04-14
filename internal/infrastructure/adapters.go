@@ -21,6 +21,7 @@ import (
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/domain/soup"
+	"github.com/danifv27/soup/internal/infrastructure/deployment"
 	"github.com/danifv27/soup/internal/infrastructure/git"
 	"github.com/danifv27/soup/internal/infrastructure/logger/logrus"
 	"github.com/danifv27/soup/internal/infrastructure/notification/console"
@@ -35,6 +36,7 @@ type Adapters struct {
 	NotificationService notification.Notifier
 	VersionRepository   soup.Version
 	GitRepository       soup.Git
+	DeployRepository    soup.Deploy
 	SoupRepository      soup.Config
 	ProbeRepository     soup.Probe
 }
@@ -43,12 +45,14 @@ func NewAdapters() Adapters {
 	l := logrus.NewLoggerService()
 	r := git.NewGitRepo(l)
 	c := config.NewSoupRepo(".")
+	d := deployment.NewDeployRepo(l)
 	return Adapters{
 		LoggerService:       l,
 		NotificationService: console.NewNotificationService(),
 		VersionRepository:   embed.NewVersionRepo(),
 		GitRepository:       &r,
+		DeployRepository:    &d,
 		SoupRepository:      c,
-		ProbeRepository:     status.NewProbeRepo(&r),
+		ProbeRepository:     status.NewProbeRepo(&r, &d),
 	}
 }

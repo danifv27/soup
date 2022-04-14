@@ -1,19 +1,20 @@
 package status
 
 import (
-	"github.com/danifv27/soup/internal/deployment"
 	"github.com/danifv27/soup/internal/domain/soup"
 )
 
 type ProbeRepo struct {
-	gitrepo soup.Git
+	gitrepo    soup.Git
+	deployrepo soup.Deploy
 }
 
 //NewProbeRepo Constructor
-func NewProbeRepo(git soup.Git) ProbeRepo {
+func NewProbeRepo(git soup.Git, deploy soup.Deploy) ProbeRepo {
 
 	return ProbeRepo{
-		gitrepo: git,
+		gitrepo:    git,
+		deployrepo: deploy,
 	}
 }
 
@@ -39,7 +40,7 @@ func (m ProbeRepo) GetReadinessInfo() (soup.ProbeInfo, error) {
 		return *i, err
 	}
 
-	if err := deployment.Ping("http://localhost:8001"); err != nil {
+	if err := m.deployrepo.Ping(); err != nil {
 		i.Result = soup.Unhealthy
 		i.Msg = err.Error()
 		return *i, err

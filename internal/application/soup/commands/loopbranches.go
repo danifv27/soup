@@ -10,7 +10,6 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/filesys"
 
 	"github.com/danifv27/soup/internal/application/logger"
-	"github.com/danifv27/soup/internal/deployment"
 	"github.com/danifv27/soup/internal/domain/soup"
 )
 
@@ -26,15 +25,17 @@ type loopBranchesRequestHandler struct {
 	logger logger.Logger
 	svc    soup.Git
 	config soup.Config
+	deploy soup.Deploy
 }
 
 //NewLoopBranchesRequestHandler Constructor
-func NewLoopBranchesRequestHandler(git soup.Git, config soup.Config, logger logger.Logger) LoopBranchesRequestHandler {
+func NewLoopBranchesRequestHandler(git soup.Git, deploy soup.Deploy, config soup.Config, logger logger.Logger) LoopBranchesRequestHandler {
 
 	return loopBranchesRequestHandler{
 		config: config,
 		svc:    git,
 		logger: logger,
+		deploy: deploy,
 	}
 }
 
@@ -44,6 +45,7 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 	var branchNames []string
 	var err error
 	var info soup.SoupInfo
+	var yml []byte
 
 	// Clone repo
 	cloneLocation = fmt.Sprintf("%s%d", "/tmp/soup/", time.Now().Unix())
@@ -56,7 +58,7 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 	}
 	h.logger.WithFields(logger.Fields{
 		"branches": branchNames,
-	}).Info("Branches parsed")
+	}).Debug("Branches parsed")
 	// Fetch branches
 	if err = h.svc.Fetch(); err != nil {
 		return err
@@ -80,18 +82,17 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 				return err
 			}
 			for _, r := range m.Resources() {
-				yml, err := r.AsYAML()
+				yml, err = r.AsYAML()
 				if err != nil {
 					return err
 				}
 				// os.Stdout.Write(yml)
-				err = deployment.Deploy(command.Path, k.Namespace, yml)
+				err = h.deploy.Deploy(k.Namespace, yml)
 				if err != nil {
 					return err
 				}
 			}
 		}
-
 	}
 	os.RemoveAll(cloneLocation)
 

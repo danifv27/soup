@@ -8,7 +8,39 @@ import (
 	"github.com/danifv27/soup/pkg/k8s"
 	krest "k8s.io/client-go/rest"
 	kcmd "k8s.io/client-go/tools/clientcmd"
+
+	"github.com/danifv27/soup/internal/application/logger"
+	"github.com/danifv27/soup/internal/domain/soup"
 )
+
+type DeployRepo struct {
+	logger logger.Logger
+	info   *soup.DeployInfo
+	config *krest.Config
+}
+
+func NewDeployRepo(l logger.Logger) DeployRepo {
+
+	return DeployRepo{
+		logger: l,
+	}
+}
+
+func (d *DeployRepo) Init(path string) error {
+	var err error
+
+	if d.info == nil {
+		d.info = new(soup.DeployInfo)
+	}
+	d.info.Path = path
+
+	d.config, err = clusterConfig(d.info.Path)
+	if err != nil {
+		return fmt.Errorf("init: %w", err)
+	}
+
+	return nil
+}
 
 // isValidUrl tests a string to determine if it is a well-structured url or not.
 func isValidUrl(toTest string) bool {
@@ -42,31 +74,28 @@ func clusterConfig(path string) (*krest.Config, error) {
 	return config, nil
 }
 
-// Deploy
-func Deploy(path string, namespace string, yaml []byte) error {
-	config, err := clusterConfig(path)
-	if err != nil {
-		return fmt.Errorf("deploy: %w", err)
-	}
-	ctx := context.TODO()
-	err = k8s.DoSSA(ctx, config, namespace, yaml)
-	if err != nil {
-		return fmt.Errorf("deploy: %w", err)
+// Ping
+func (d *DeployRepo) Ping() error {
+
+	if d.info == nil {
+		return fmt.Errorf("ping: deploy repo not initialized")
 	}
 
+	ctx := context.TODO()
+	err := k8s.DoPing(ctx, d.config)
+	if err != nil {
+		return fmt.Errorf("ping: %w", err)
+	}
 	return nil
 }
 
-// Ping
-func Ping(path string) error {
-	config, err := clusterConfig(path)
-	if err != nil {
-		return fmt.Errorf("ping: %w", err)
-	}
+// Deploy
+func (d *DeployRepo) Deploy(namespace string, yaml []byte) error {
+
 	ctx := context.TODO()
-	err = k8s.DoPing(ctx, config)
-	if err != nil {
-		return fmt.Errorf("ping: %w", err)
+	if err := k8s.DoSSA(ctx, d.config, namespace, yaml); err != nil {
+		return fmt.Errorf("deploy: %w", err)
 	}
+
 	return nil
 }

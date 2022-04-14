@@ -22,3 +22,9 @@ type Probe interface {
 	GetLivenessInfo() (ProbeInfo, error)
 	GetReadinessInfo() (ProbeInfo, error)
 }
+
+type Deploy interface {
+	Init(path string) error
+	Deploy(namespace string, yaml []byte) error
+	Ping() error
+}

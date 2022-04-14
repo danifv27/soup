@@ -43,11 +43,13 @@ func main() {
 	infra.GitRepository.Init(cli.Sync.Repo.Repo,
 		cli.Sync.Repo.As.Username.Username,
 		cli.Sync.Repo.As.Username.Withtoken.Withtoken)
+	infra.DeployRepository.Init(cli.Sync.Path)
 
 	apps := application.NewApplications(infra.LoggerService,
 		infra.NotificationService,
 		infra.VersionRepository,
 		infra.GitRepository,
+		infra.DeployRepository,
 		infra.SoupRepository,
 		infra.ProbeRepository)
 

@@ -56,3 +56,7 @@ type GitInfo struct {
 	Username string
 	Token    string
 }
+
+type DeployInfo struct {
+	Path string
+}
