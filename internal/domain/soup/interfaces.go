@@ -7,9 +7,9 @@ type Version interface {
 
 type Git interface {
 	InitRepo(url string, username string, token string) error
-	PlainClone(location string, url string, username string, token string) error
-	GetBranchNames(username string, token string) ([]string, error)
-	Fetch(username string, token string) error
+	PlainClone(location string) error
+	GetBranchNames() ([]string, error)
+	Fetch() error
 	Checkout(branchName string) error
 	LsRemote() error
 }

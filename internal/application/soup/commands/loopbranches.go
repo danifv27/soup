@@ -15,10 +15,7 @@ import (
 )
 
 type LoopBranchesRequest struct {
-	URL      string
-	Token    string
-	Username string
-	Path     string
+	Path string
 }
 
 type LoopBranchesRequestHandler interface {
@@ -50,18 +47,18 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 
 	// Clone repo
 	cloneLocation = fmt.Sprintf("%s%d", "/tmp/soup/", time.Now().Unix())
-	if err = h.svc.PlainClone(cloneLocation, command.URL, command.Username, command.Token); err != nil {
+	if err = h.svc.PlainClone(cloneLocation); err != nil {
 		return err
 	}
 	// Get branch names
-	if branchNames, err = h.svc.GetBranchNames(command.Username, command.Token); err != nil {
+	if branchNames, err = h.svc.GetBranchNames(); err != nil {
 		return err
 	}
 	h.logger.WithFields(logger.Fields{
 		"branches": branchNames,
 	}).Info("Branches parsed")
 	// Fetch branches
-	if err = h.svc.Fetch(command.Username, command.Token); err != nil {
+	if err = h.svc.Fetch(); err != nil {
 		return err
 	}
 

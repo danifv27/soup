@@ -33,33 +33,35 @@ func (g *GitRepo) InitRepo(url string, username string, token string) error {
 		g.info = new(soup.GitInfo)
 	}
 	g.info.Url = url
-	g.info.Username = username
+	if username == "" {
+		g.info.Username = "dummy"
+	} else {
+		g.info.Username = username
+	}
 	g.info.Token = token
 
 	return nil
 }
 
-func (g *GitRepo) PlainClone(location string, url string, username string, token string) error {
+func (g *GitRepo) PlainClone(location string) error {
 	var err error
 	var r *gogit.Repository
 
-	if username == "" {
-		username = "dummy"
+	if g.info == nil {
+		return errors.Wrap(fmt.Errorf("git repo not initialized"), "PlainClone")
 	}
 	g.logger.WithFields(logger.Fields{
-		"url":      url,
 		"location": location,
-		"token":    token,
-		"username": username,
+		"info":     g.info,
 	}).Info("Cloning git repository")
 	// Authentication
 	auth := transport.BasicAuth{
-		Username: username,
-		Password: token,
+		Username: g.info.Username,
+		Password: g.info.Token,
 	}
 	if r, err = gogit.PlainClone(location, false, &gogit.CloneOptions{
 		Auth: &auth,
-		URL:  url,
+		URL:  g.info.Url,
 	}); err != nil {
 
 		return errors.Wrap(err, "plainclone")
@@ -70,9 +72,12 @@ func (g *GitRepo) PlainClone(location string, url string, username string, token
 	return nil
 }
 
-func (g *GitRepo) GetBranchNames(username string, token string) ([]string, error) {
+func (g *GitRepo) GetBranchNames() ([]string, error) {
 	var branchNames []string
 
+	if g.info == nil {
+		return nil, errors.Wrap(fmt.Errorf("git repo not initialized"), "GetBranchNames")
+	}
 	if g.repo == nil {
 		return nil, fmt.Errorf("git repository not cloned")
 	}
@@ -80,12 +85,9 @@ func (g *GitRepo) GetBranchNames(username string, token string) ([]string, error
 	if err != nil {
 		return nil, errors.Wrap(err, "remote")
 	}
-	if username == "" {
-		username = "dummy"
-	}
 	auth := transport.BasicAuth{
-		Username: username,
-		Password: token,
+		Username: g.info.Username,
+		Password: g.info.Token,
 	}
 	refList, err := remote.List(&gogit.ListOptions{
 		Auth: &auth,
@@ -106,14 +108,14 @@ func (g *GitRepo) GetBranchNames(username string, token string) ([]string, error
 	return branchNames, nil
 }
 
-func (g *GitRepo) Fetch(username string, token string) error {
+func (g *GitRepo) Fetch() error {
 
-	if username == "" {
-		username = "dummy"
+	if g.info == nil {
+		return errors.Wrap(fmt.Errorf("git repo not initialized"), "Fetch")
 	}
 	auth := transport.BasicAuth{
-		Username: username,
-		Password: token,
+		Username: g.info.Username,
+		Password: g.info.Token,
 	}
 
 	err := g.repo.Fetch(&gogit.FetchOptions{
@@ -155,9 +157,7 @@ func (g *GitRepo) LsRemote() error {
 		return errors.Wrap(fmt.Errorf("git repo not initialized"), "LsRemote")
 	}
 	g.logger.WithFields(logger.Fields{
-		"url":      g.info.Url,
-		"token":    g.info.Token,
-		"username": g.info.Username,
+		"info": g.info,
 	}).Debug("ls-remote repository")
 	// Authentication
 	auth := transport.BasicAuth{
