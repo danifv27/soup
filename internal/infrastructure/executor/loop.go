@@ -3,6 +3,8 @@ package executor
 import (
 	"sync"
 
+	"github.com/segmentio/ksuid"
+
 	"github.com/danifv27/soup/internal/application"
 	señales "github.com/danifv27/soup/internal/application/signals"
 )
@@ -30,8 +32,10 @@ func (l *Loop) Exec(wg *sync.WaitGroup) {
 	wg.Add(1)
 
 	go func() {
-		l.apps.LoggerService.Debug("starting executor")
+		id := ksuid.New()
+		l.apps.LoggerService.With("id", id).Debug("starting executor")
 		l.sigHandler.Run()
+		l.apps.LoggerService.With("id", id).Debug("finishing executor")
 		wg.Done()
 	}()
 
