@@ -24,6 +24,7 @@ func (c Handler) GetLiveness(w http.ResponseWriter, _ *http.Request) {
 	info, err := c.apps.Queries.GetLivenessInfoHandler.Handle()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		c.apps.LoggerService.With("err", err).Warn("liveness probe failed")
 	}
 	enc.Encode(info)
 }
@@ -35,6 +36,7 @@ func (c Handler) GetReadiness(w http.ResponseWriter, _ *http.Request) {
 	info, err := c.apps.Queries.GetReadinessInfoHandler.Handle()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		c.apps.LoggerService.With("err", err).Warn("readiness probe failed")
 	}
 	enc.Encode(info)
 }

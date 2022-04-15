@@ -52,7 +52,8 @@ func (h *Handler) Run() error {
 
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel)
-
+	// Reduce the impact of https://github.com/golang/go/issues/37942
+	signal.Reset(syscall.SIGURG)
 	runComplete := newBoolMutex()
 	shutdownComplete := newBoolMutex()
 
@@ -61,7 +62,9 @@ func (h *Handler) Run() error {
 
 	go func() {
 		sigHupOrTerm := <-signalChannel
-
+		h.Logger.WithFields(logger.Fields{
+			"signal": sigHupOrTerm.String(),
+		}).Debug("signal received")
 		//intentionally only increment the group if a signal has been received
 		//Otherwise, a race condition exists where the shutdown handler may be
 		//terminated prematurely
@@ -73,10 +76,10 @@ func (h *Handler) Run() error {
 		defer func() {
 			if r := recover(); r != nil {
 				if err, ok := r.(error); ok {
-					h.Logger.Error("shutdown handler panicked with error:", err)
+					h.Logger.With("err", err).Error("shutdown handler panicked")
 					shutdownErr.set(err)
 				} else {
-					h.Logger.Error("shutdown handler panicked:", r)
+					h.Logger.With("err", r).Error("shutdown handler panicked")
 					shutdownErr.set(fmt.Errorf("shutdown handler panicked: %v", r))
 				}
 			}
@@ -86,22 +89,13 @@ func (h *Handler) Run() error {
 			h.Logger.Debug("run completed, not running shutdown handler")
 			return
 		}
-
-		h.Logger.Debug(fmt.Sprintf("Received shutdown signal: %s", sigHupOrTerm))
-		// h.Logger.Debug("Calling shutdown handler")
 		shutdownErr.set(h.ShutdownFunc(sigHupOrTerm))
-		// h.Logger.Debug("Shutdown handler complete")
-
 		if shutdownErr.read() != nil {
 			h.Logger.Error(fmt.Errorf("run: %w", shutdownErr.read()))
 		}
 	}()
-
-	// h.Logger.Debug("Calling run handler")
 	runErr = h.RunFunc()
 	runComplete.setTrue()
-	// h.Logger.Debug("Run handler complete")
-
 	if runErr != nil {
 		h.Logger.Error(fmt.Errorf("run: %w", runErr))
 	}
