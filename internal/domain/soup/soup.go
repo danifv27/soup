@@ -58,5 +58,6 @@ type GitInfo struct {
 }
 
 type DeployInfo struct {
-	Path string
+	Path    string
+	Context *string
 }

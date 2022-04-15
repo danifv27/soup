@@ -16,7 +16,6 @@ import (
 type DeployRepo struct {
 	logger logger.Logger
 	info   *soup.DeployInfo
-	config *krest.Config
 }
 
 func NewDeployRepo(l logger.Logger) DeployRepo {
@@ -27,17 +26,12 @@ func NewDeployRepo(l logger.Logger) DeployRepo {
 }
 
 func (d *DeployRepo) Init(path string, c *string) error {
-	var err error
 
 	if d.info == nil {
 		d.info = new(soup.DeployInfo)
 	}
 	d.info.Path = path
-
-	d.config, err = clusterConfig(d.info.Path, c)
-	if err != nil {
-		return fmt.Errorf("init: %w", err)
-	}
+	d.info.Context = c
 
 	return nil
 }
@@ -88,20 +82,28 @@ func (d *DeployRepo) Ping() error {
 	if d.info == nil {
 		return fmt.Errorf("ping: deploy repo not initialized")
 	}
-
+	config, err := clusterConfig(d.info.Path, d.info.Context)
+	if err != nil {
+		return fmt.Errorf("init: %w", err)
+	}
 	ctx := context.TODO()
-	err := k8s.DoPing(ctx, d.config)
+	err = k8s.DoPing(ctx, config)
 	if err != nil {
 		return fmt.Errorf("ping: %w", err)
 	}
+
 	return nil
 }
 
 // Deploy
 func (d *DeployRepo) Deploy(namespace string, yaml []byte) error {
 
+	config, err := clusterConfig(d.info.Path, d.info.Context)
+	if err != nil {
+		return fmt.Errorf("init: %w", err)
+	}
 	ctx := context.TODO()
-	if err := k8s.DoSSA(ctx, d.config, namespace, yaml); err != nil {
+	if err = k8s.DoSSA(ctx, config, namespace, yaml); err != nil {
 		return fmt.Errorf("deploy: %w", err)
 	}
 

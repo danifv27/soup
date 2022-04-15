@@ -56,9 +56,6 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 	if branchNames, err = h.svc.GetBranchNames(); err != nil {
 		return err
 	}
-	h.logger.WithFields(logger.Fields{
-		"branches": branchNames,
-	}).Debug("Branches parsed")
 	// Fetch branches
 	if err = h.svc.Fetch(); err != nil {
 		return err
@@ -86,11 +83,16 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 				if err != nil {
 					return err
 				}
-				// os.Stdout.Write(yml)
 				err = h.deploy.Deploy(k.Namespace, yml)
 				if err != nil {
 					return err
 				}
+				h.logger.WithFields(logger.Fields{
+					"branch":    branchName,
+					"namespace": k.Namespace,
+					"gvk":       r.GetGvk(),
+					"name":      r.GetName(),
+				}).Debug("resource deployed")
 			}
 		}
 	}
