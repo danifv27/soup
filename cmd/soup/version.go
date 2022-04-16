@@ -17,8 +17,8 @@ type VersionCmd struct {
 
 func (cmd *VersionCmd) Run(cli *CLI, apps application.Applications) error {
 
-	apps.LoggerService.SetLevel(cli.Globals.Logging.Level)
-	apps.LoggerService.SetFormat(cli.Globals.Logging.Format)
+	apps.LoggerService.SetLevel(cli.Logging.Level)
+	apps.LoggerService.SetFormat(cli.Logging.Format)
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {

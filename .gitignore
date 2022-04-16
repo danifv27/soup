@@ -1,2 +1,4 @@
 output/
 version.json
+cmd/soup/__debug_bin.json
+cmd/soup/__debug_bin

@@ -21,13 +21,11 @@ func (f contextStr) BeforeApply(set *WasSetted) error {
 }
 
 type SyncCmd struct {
-	Path     string     `help:"path to the kubeconfig file to use for requests or host url" env:"SOUP_SYNC_K8S_PATH"`
-	Context  contextStr `help:"the name of the kubeconfig context to use" env:"SOUP_SYNC_K8S_CONTEXT"`
-	Actuator string     `help:"actuator port" default:":8081" env:"SOUP_SYNC_ACTUATOR" optional:"" hidden:""`
-	Repo     struct {
+	Path    string     `help:"path to the kubeconfig file to use for requests or host url" env:"SOUP_SYNC_K8S_PATH"`
+	Context contextStr `help:"the name of the kubeconfig context to use" env:"SOUP_SYNC_K8S_CONTEXT"`
+	Repo    struct {
 		Repo string `arg:"" help:"repo to sync"`
-		// Interval int    `short:"i" help:"synchronize every" default:"120" env:"SOUP_SYNC_INTERVAL"`
-		As struct {
+		As   struct {
 			Username struct {
 				Username  string `arg:"" help:"username" env:"SOUP_SYNC_USERNAME" optional:""`
 				Withtoken struct {
@@ -39,8 +37,8 @@ type SyncCmd struct {
 }
 
 func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications, f *WasSetted) error {
-	apps.LoggerService.SetLevel(cli.Globals.Logging.Level)
-	apps.LoggerService.SetFormat(cli.Globals.Logging.Format)
+	apps.LoggerService.SetLevel(cli.Logging.Level)
+	apps.LoggerService.SetFormat(cli.Logging.Format)
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {
@@ -49,7 +47,6 @@ func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications, f *WasSetted) e
 		req := commands.LoopBranchesRequest{
 			Path: cli.Sync.Path,
 		}
-
 		err = apps.Commands.LoopBranches.Handle(req)
 
 		return err
@@ -61,7 +58,8 @@ func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications, f *WasSetted) e
 
 	ports := infrastructure.NewPorts(apps, &h)
 	wg := &sync.WaitGroup{}
-	ports.Actuators.Start(cli.Sync.Actuator, wg)
+	ports.Actuators.SetActuatorRoot(cli.Actuator.Root)
+	ports.Actuators.Start(cli.Actuator.Port, wg)
 	ports.MainLoop.Exec(wg)
 	wg.Wait()
 

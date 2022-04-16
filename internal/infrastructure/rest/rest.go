@@ -20,30 +20,34 @@ type Server struct {
 	apps       application.Applications
 	httpServer *http.Server
 	router     *mux.Router
+	root       string
 }
 
 //NewServer
 func NewServer(apps application.Applications) *Server {
 
 	httpServer := &Server{
-		apps: apps,
+		apps:   apps,
+		router: mux.NewRouter(),
 	}
-	httpServer.router = mux.NewRouter()
-	httpServer.addProbeRoutes()
-	// http.Handle("/", httpServer.router)
 
 	return httpServer
 }
 
-func (s *Server) addProbeRoutes() {
-	const probesHTTPRoutePath = "/probes"
+func (s *Server) SetActuatorRoot(root string) {
 
-	s.router.HandleFunc(probesHTTPRoutePath+"/liveness", probes.NewHandler(s.apps).GetLiveness).Methods("GET")
-	s.router.HandleFunc(probesHTTPRoutePath+"/readiness", probes.NewHandler(s.apps).GetReadiness).Methods("GET")
+	s.root = root
+}
+
+func (s *Server) addProbeRoutes() {
+
+	s.router.HandleFunc(s.root+"/liveness", probes.NewHandler(s.apps).GetLiveness).Methods("GET")
+	s.router.HandleFunc(s.root+"/readiness", probes.NewHandler(s.apps).GetReadiness).Methods("GET")
 }
 
 func (s *Server) Start(address string, wg *sync.WaitGroup) {
 
+	s.addProbeRoutes()
 	s.httpServer = &http.Server{
 		Addr:    address,
 		Handler: s.router,
