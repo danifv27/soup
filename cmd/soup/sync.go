@@ -21,8 +21,8 @@ func (f contextStr) BeforeApply(set *WasSetted) error {
 }
 
 type SyncCmd struct {
-	Path    string     `help:"path to the kubeconfig file to use for requests or host url" env:"SOUP_SYNC_K8S_PATH"`
-	Context contextStr `help:"the name of the kubeconfig context to use" env:"SOUP_SYNC_K8S_CONTEXT"`
+	Path    string     `help:"path to the kubeconfig file to use for requests or host url" env:"SOUP_SYNC_K8S_PATH" prefix:"sync."`
+	Context contextStr `help:"the name of the kubeconfig context to use" env:"SOUP_SYNC_K8S_CONTEXT" prefix:"sync."`
 	Repo    struct {
 		Repo string `arg:"" help:"repo to sync"`
 		As   struct {
