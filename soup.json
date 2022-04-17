@@ -8,5 +8,9 @@
     "actuator": {
         "port": ":8081",
         "root": "/actuator"
+    },
+    "alert": {
+        "url": "api.opsgenie.com",
+        "teams": ["vortex-sre", "lbr-sre", "origo-ops"]
     } 
 }

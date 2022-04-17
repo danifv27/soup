@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"sync"
 	"syscall"
 
 	"github.com/danifv27/soup/internal/application"
+	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/application/soup/commands"
 	"github.com/danifv27/soup/internal/infrastructure"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
@@ -48,6 +50,14 @@ func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications, f *WasSetted) e
 			Path: cli.Sync.Path,
 		}
 		err = apps.Commands.LoopBranches.Handle(req)
+		n := notification.Notification{
+			Message:     fmt.Sprintf("error deploying %s", cli.Sync.Repo.Repo),
+			Description: err.Error(),
+			Priority:    cli.Alert.Priority,
+			Tags:        append([]string(nil), cli.Alert.Tags...),
+			Teams:       append([]string(nil), cli.Alert.Teams...),
+		}
+		apps.Notifier.Notify(n)
 
 		return err
 	})

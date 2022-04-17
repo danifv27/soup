@@ -24,7 +24,7 @@ import (
 	"github.com/danifv27/soup/internal/infrastructure/deployment"
 	"github.com/danifv27/soup/internal/infrastructure/git"
 	"github.com/danifv27/soup/internal/infrastructure/logger/logrus"
-	"github.com/danifv27/soup/internal/infrastructure/notification/console"
+	"github.com/danifv27/soup/internal/infrastructure/notification/opsgenie"
 	"github.com/danifv27/soup/internal/infrastructure/status"
 	"github.com/danifv27/soup/internal/infrastructure/storage/config"
 	"github.com/danifv27/soup/internal/infrastructure/storage/embed"
@@ -41,18 +41,25 @@ type Adapters struct {
 	ProbeRepository     soup.Probe
 }
 
-func NewAdapters() Adapters {
+func NewAdapters() (Adapters, error) {
+	var err error
+	var n *opsgenie.OpsgenieService
+
 	l := logrus.NewLoggerService()
 	r := git.NewGitRepo(l)
 	c := config.NewSoupRepo(".")
 	d := deployment.NewDeployRepo(l)
+	if n, err = opsgenie.NewOpsgenieService(l); err != nil {
+		return Adapters{}, err
+	}
+
 	return Adapters{
 		LoggerService:       l,
-		NotificationService: console.NewNotificationService(),
+		NotificationService: n,
 		VersionRepository:   embed.NewVersionRepo(),
 		GitRepository:       &r,
 		DeployRepository:    &d,
 		SoupRepository:      c,
 		ProbeRepository:     status.NewProbeRepo(&r, &d),
-	}
+	}, nil
 }
