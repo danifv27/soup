@@ -49,15 +49,16 @@ func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications, f *WasSetted) e
 		req := commands.LoopBranchesRequest{
 			Path: cli.Sync.Path,
 		}
-		err = apps.Commands.LoopBranches.Handle(req)
-		n := notification.Notification{
-			Message:     fmt.Sprintf("error deploying %s", cli.Sync.Repo.Repo),
-			Description: err.Error(),
-			Priority:    cli.Alert.Priority,
-			Tags:        append([]string(nil), cli.Alert.Tags...),
-			Teams:       append([]string(nil), cli.Alert.Teams...),
+		if err = apps.Commands.LoopBranches.Handle(req); err != nil {
+			n := notification.Notification{
+				Message:     fmt.Sprintf("error deploying %s", cli.Sync.Repo.Repo),
+				Description: err.Error(),
+				Priority:    cli.Alert.Priority,
+				Tags:        append([]string(nil), cli.Alert.Tags...),
+				Teams:       append([]string(nil), cli.Alert.Teams...),
+			}
+			apps.Notifier.Notify(n)
 		}
-		apps.Notifier.Notify(n)
 
 		return err
 	})
