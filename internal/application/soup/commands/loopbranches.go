@@ -92,7 +92,7 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 					"namespace": k.Namespace,
 					"gvk":       r.GetGvk(),
 					"name":      r.GetName(),
-				}).Debug("resource deployed")
+				}).Info("resource deployed")
 			}
 		}
 	}
