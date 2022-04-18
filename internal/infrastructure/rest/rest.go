@@ -10,6 +10,7 @@ import (
 
 	"github.com/danifv27/soup/internal/application"
 	"github.com/danifv27/soup/internal/infrastructure/executor"
+	"github.com/danifv27/soup/internal/infrastructure/rest/bitbucket"
 	"github.com/danifv27/soup/internal/infrastructure/rest/probes"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 	"github.com/gorilla/mux"
@@ -45,9 +46,15 @@ func (s *Server) addProbeRoutes() {
 	s.router.HandleFunc(s.root+"/readiness", probes.NewHandler(s.apps).GetReadiness).Methods("GET")
 }
 
+func (s *Server) addWebhookRoutes() {
+
+	s.router.HandleFunc(s.root+"/webhook", bitbucket.NewHandler(s.apps).WebhookEvent).Methods("POST")
+}
+
 func (s *Server) Start(address string, wg *sync.WaitGroup) {
 
 	s.addProbeRoutes()
+	s.addWebhookRoutes()
 	s.httpServer = &http.Server{
 		Addr:    address,
 		Handler: s.router,
