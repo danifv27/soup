@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/alecthomas/kong v0.5.0
 	github.com/go-git/go-git/v5 v5.4.2
+	github.com/go-playground/webhooks/v6 v6.0.0-rc.1
 	github.com/gorilla/mux v1.8.0
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.10
 	github.com/segmentio/ksuid v1.0.4

@@ -49,6 +49,7 @@ func (s *Server) addProbeRoutes() {
 func (s *Server) addWebhookRoutes() {
 
 	s.router.HandleFunc(s.root+"/webhook", bitbucket.NewHandler(s.apps).WebhookEvent).Methods("POST")
+	// s.router.HandleFunc(s.root+"/webhook", bitbucket.NewHandler(s.apps).WebhookEvent).Methods("GET")
 }
 
 func (s *Server) Start(address string, wg *sync.WaitGroup, enableWebhook bool) {
