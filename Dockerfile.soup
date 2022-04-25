@@ -3,7 +3,7 @@ FROM golang:alpine AS build-env
 
 ADD . /src
 RUN apk add --update --no-cache openssl git make
-RUN cd /src &&  make build-linux-amd64
+RUN cd /src && make build-linux-amd64
 
 # final stage
 FROM alpine

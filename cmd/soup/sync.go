@@ -70,7 +70,7 @@ func (cmd *SyncCmd) Run(cli *CLI, apps application.Applications, f *WasSetted) e
 	ports := infrastructure.NewPorts(apps, &h)
 	wg := &sync.WaitGroup{}
 	ports.Actuators.SetActuatorRoot(cli.Actuator.Root)
-	ports.Actuators.Start(cli.Actuator.Port, wg)
+	ports.Actuators.Start(cli.Actuator.Port, wg, false)
 	ports.MainLoop.Exec(wg)
 	wg.Wait()
 

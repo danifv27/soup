@@ -51,10 +51,12 @@ func (s *Server) addWebhookRoutes() {
 	s.router.HandleFunc(s.root+"/webhook", bitbucket.NewHandler(s.apps).WebhookEvent).Methods("POST")
 }
 
-func (s *Server) Start(address string, wg *sync.WaitGroup) {
+func (s *Server) Start(address string, wg *sync.WaitGroup, enableWebhook bool) {
 
 	s.addProbeRoutes()
-	s.addWebhookRoutes()
+	if enableWebhook {
+		s.addWebhookRoutes()
+	}
 	s.httpServer = &http.Server{
 		Addr:    address,
 		Handler: s.router,
