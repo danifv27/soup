@@ -28,8 +28,9 @@ type Queries struct {
 
 //Commands operations that accept data to make a change or trigger an action
 type Commands struct {
-	PrintVersion commands.PrintVersionRequestHandler
-	LoopBranches commands.LoopBranchesRequestHandler
+	PrintVersion  commands.PrintVersionRequestHandler
+	LoopBranches  commands.LoopBranchesRequestHandler
+	ProcessBranch commands.ProcessBranchRequestHandler
 }
 
 //Applications contains all exposed services of the application layer
@@ -58,8 +59,9 @@ func NewApplications(logger logger.Logger,
 			GetReadinessInfoHandler: queries.NewGetReadinessInfoHandler(probes, git),
 		},
 		Commands: Commands{
-			PrintVersion: commands.NewPrintVersionRequestHandler(version, notifier),
-			LoopBranches: commands.NewLoopBranchesRequestHandler(git, deploy, config, logger),
+			PrintVersion:  commands.NewPrintVersionRequestHandler(version, notifier),
+			LoopBranches:  commands.NewLoopBranchesRequestHandler(git, deploy, config, logger),
+			ProcessBranch: commands.NewProcessBranchRequestHandler(git, deploy, config, logger),
 		},
 	}
 }

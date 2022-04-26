@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"sigs.k8s.io/kustomize/api/krusty"
@@ -12,23 +13,25 @@ import (
 	"github.com/danifv27/soup/internal/domain/soup"
 )
 
-type LoopBranchesRequest struct{}
-
-type LoopBranchesRequestHandler interface {
-	Handle(command LoopBranchesRequest) error
+type ProcessBranchRequest struct {
+	Branch string
 }
 
-type loopBranchesRequestHandler struct {
+type ProcessBranchRequestHandler interface {
+	Handle(command ProcessBranchRequest) error
+}
+
+type processBranchRequestHandler struct {
 	logger logger.Logger
 	svc    soup.Git
 	config soup.Config
 	deploy soup.Deploy
 }
 
-//NewLoopBranchesRequestHandler Constructor
-func NewLoopBranchesRequestHandler(git soup.Git, deploy soup.Deploy, config soup.Config, logger logger.Logger) LoopBranchesRequestHandler {
+//NewProcessBranchRequestHandler Constructor
+func NewProcessBranchRequestHandler(git soup.Git, deploy soup.Deploy, config soup.Config, logger logger.Logger) ProcessBranchRequestHandler {
 
-	return loopBranchesRequestHandler{
+	return processBranchRequestHandler{
 		config: config,
 		svc:    git,
 		logger: logger,
@@ -37,9 +40,8 @@ func NewLoopBranchesRequestHandler(git soup.Git, deploy soup.Deploy, config soup
 }
 
 //Handle Handles the update request
-func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
+func (h processBranchRequestHandler) Handle(command ProcessBranchRequest) error {
 	var cloneLocation string
-	var branchNames []string
 	var err error
 
 	// Clone repo
@@ -50,27 +52,20 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 	if err = h.svc.PlainClone(cloneLocation); err != nil {
 		return err
 	}
-	// Get branch names
-	if branchNames, err = h.svc.GetBranchNames(); err != nil {
-		return err
-	}
 	// Fetch branches
 	if err = h.svc.Fetch(); err != nil {
 		return err
 	}
 
-	// Checkout to the branches and do GitOps stuff
-	for _, branchName := range branchNames {
-
-		if err = h.checkoutAndProcess(branchName, cloneLocation); err != nil {
-			return err
-		}
+	// Checkout the branch and do GitOps stuff
+	if err = h.checkoutAndProcess(command.Branch, cloneLocation); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (h loopBranchesRequestHandler) checkoutAndProcess(branchName string, cloneLocation string) error {
+func (h processBranchRequestHandler) checkoutAndProcess(branchName string, cloneLocation string) error {
 	var err error
 	var info soup.SoupInfo
 	var yml []byte
@@ -86,7 +81,7 @@ func (h loopBranchesRequestHandler) checkoutAndProcess(branchName string, cloneL
 		HonorKustomizeFlags(krusty.MakeDefaultOptions()),
 	)
 	for _, k := range info.Kustomizations {
-		if k.Branch != branchName {
+		if strings.Contains(branchName, k.Branch) {
 			continue
 		}
 		m, err := kst.Run(fSys, fmt.Sprintf("%s/%s", info.Root, k.Overlay))

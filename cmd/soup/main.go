@@ -6,9 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/kong"
-
-	"github.com/danifv27/soup/internal/application"
-	"github.com/danifv27/soup/internal/infrastructure"
 )
 
 type Log struct {
@@ -30,15 +27,10 @@ type Alert struct {
 }
 
 type CLI struct {
-	Logging  Log        `embed:"" prefix:"logging."`
-	Actuator Actuator   `embed:"" prefix:"actuator."`
-	Alert    Alert      `embed:"" prefix:"alert."`
-	Version  VersionCmd `cmd:"" help:"Show the version information"`
-	Sync     SyncCmd    `cmd:"" help:"Reconcile kubernetes with vcs contents"`
-}
-
-type WasSetted struct {
-	contextWasSet bool
+	Logging Log        `embed:"" prefix:"logging."`
+	Alert   Alert      `embed:"" prefix:"alert."`
+	Version VersionCmd `cmd:"" help:"Show the version information"`
+	Sync    SyncCmd    `cmd:"" help:"Sync kubernetes with VCS contents"`
 }
 
 func main() {
@@ -46,14 +38,14 @@ func main() {
 
 	cli := CLI{
 		Logging: Log{},
-		// Globals: Globals{},
 		Version: VersionCmd{},
 		Sync:    SyncCmd{},
 	}
+
 	setted := WasSetted{
 		contextWasSet: false,
 	}
-	// cli.Globals.Flags.ContextWasSet = false
+
 	bin := filepath.Base(os.Args[0])
 	//config file has precedence over envars
 	ctx := kong.Parse(&cli,
@@ -66,32 +58,6 @@ func main() {
 			Tree: true,
 		}),
 	)
-	infra, err := infrastructure.NewAdapters()
-	ctx.FatalIfErrorf(err)
-	err = infra.GitRepository.Init(cli.Sync.Repo.Repo,
-		cli.Sync.Repo.As.Username.Username,
-		cli.Sync.Repo.As.Username.Withtoken.Withtoken)
-	ctx.FatalIfErrorf(err)
-
-	if setted.contextWasSet {
-		c := string(cli.Sync.Context)
-		err = infra.DeployRepository.Init(cli.Sync.Path, &c)
-	} else {
-		err = infra.DeployRepository.Init(cli.Sync.Path, nil)
-	}
-	ctx.FatalIfErrorf(err)
-
-	err = infra.NotificationService.Init(cli.Alert.URL, cli.Alert.Apikey)
-	ctx.FatalIfErrorf(err)
-
-	apps := application.NewApplications(infra.LoggerService,
-		infra.NotificationService,
-		infra.VersionRepository,
-		infra.GitRepository,
-		infra.DeployRepository,
-		infra.SoupRepository,
-		infra.ProbeRepository)
-
-	err = ctx.Run(&cli, apps)
+	err = ctx.Run(&cli)
 	ctx.FatalIfErrorf(err)
 }

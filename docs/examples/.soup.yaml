@@ -2,9 +2,9 @@
 # Set of KRM resources to build
 kustomizations:
   - # Namespace where manifests will be deployed
-    namespace: 
+    namespace: origo-devops-dev
     # branch from overlay is to be pulled
     branch: develop
     # Overlay is a path to a directory containing 'kustomization.yaml'. 
     # Relative to soup.yaml
-    overlay: backend/serviceA
+    overlay: kustomize/overlays/frontend/simpleapp
