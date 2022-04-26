@@ -171,3 +171,7 @@ test: unit_test ## Run all available tests
 .PHONY: unit_test
 unit_test: ## Run all available unit tests
 	go test -v $(shell go list ./... | grep -v /vendor/)
+
+.PHONY: ktunnel
+ktunnel:
+	ktunnel -v expose sre-soup-ktunnel-main 8081:8081 -v -r -n origo-devops-dev
