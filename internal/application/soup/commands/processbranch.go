@@ -14,6 +14,8 @@ import (
 )
 
 type ProcessBranchRequest struct {
+	// Branch reference, usually obtained from the webhook data.
+	// For bitbucket repos is in the form ref/head/<branch name>
 	Branch string
 }
 

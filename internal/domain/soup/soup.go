@@ -1,6 +1,8 @@
 package soup
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type VersionInfo struct {
 	//GitCommit The git commit that was compiled. This will be filled in by the compiler.
