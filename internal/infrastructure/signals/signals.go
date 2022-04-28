@@ -53,7 +53,7 @@ func (h *Handler) Run() error {
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel)
 	// Reduce the impact of https://github.com/golang/go/issues/37942
-	signal.Reset(syscall.SIGURG)
+	signal.Reset(syscall.SIGURG, syscall.SIGCHLD)
 	runComplete := newBoolMutex()
 	shutdownComplete := newBoolMutex()
 
@@ -63,7 +63,8 @@ func (h *Handler) Run() error {
 	go func() {
 		sigHupOrTerm := <-signalChannel
 		h.Logger.WithFields(logger.Fields{
-			"signal": sigHupOrTerm.String(),
+			"signal": sigHupOrTerm,
+			"msg":    sigHupOrTerm.String(),
 		}).Debug("signal received")
 		//intentionally only increment the group if a signal has been received
 		//Otherwise, a race condition exists where the shutdown handler may be
