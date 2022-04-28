@@ -84,7 +84,7 @@ func (d *DeployRepo) Ping() error {
 	}
 	config, err := clusterConfig(d.info.Path, d.info.Context)
 	if err != nil {
-		return fmt.Errorf("init: %w", err)
+		return fmt.Errorf("ping: %w", err)
 	}
 	ctx := context.TODO()
 	err = k8s.DoPing(ctx, config)
