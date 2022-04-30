@@ -44,7 +44,7 @@ func (h getReadnessInfoHandler) Handle() (GetReadinessInfoResult, error) {
 	if info, err = h.probesrepo.GetReadinessInfo(); err != nil {
 		result = GetReadinessInfoResult{
 			Result: info.Result,
-			Msg:    info.Msg,
+			Msg:    err.Error(),
 		}
 	} else {
 		result = GetReadinessInfoResult{
@@ -53,5 +53,5 @@ func (h getReadnessInfoHandler) Handle() (GetReadinessInfoResult, error) {
 		}
 	}
 
-	return result, err
+	return result, nil
 }

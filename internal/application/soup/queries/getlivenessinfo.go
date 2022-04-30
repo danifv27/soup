@@ -35,13 +35,18 @@ func NewGetLivenessInfoHandler(repo soup.Probe) GetLivenessInfoHandler {
 func (h getLivenessInfoHandler) Handle() (GetLivenessInfoResult, error) {
 	var info soup.ProbeInfo
 	var err error
+	var result GetLivenessInfoResult
 
 	if info, err = h.probesrepo.GetLivenessInfo(); err != nil {
-		return GetLivenessInfoResult{}, err
-	}
-	result := GetLivenessInfoResult{
-		Result: info.Result,
-		Msg:    info.Msg,
+		result = GetLivenessInfoResult{
+			Result: info.Result,
+			Msg:    err.Error(),
+		}
+	} else {
+		result = GetLivenessInfoResult{
+			Result: info.Result,
+			Msg:    info.Msg,
+		}
 	}
 
 	return result, nil
