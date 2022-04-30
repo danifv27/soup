@@ -4,7 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
         {
             "name": "Debug Version Command",
             "type": "go",
@@ -16,7 +15,8 @@
                 "version"
             ],
             "showLog": true
-        },{
+        },
+        {
             "name": "Sync GitHub With Envars",
             "type": "go",
             "request": "launch",
@@ -24,55 +24,43 @@
             "program": "${workspaceFolder}/cmd/soup",
             "env": {
                 "SOUP_SYNC_TOKEN": "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"
+                "SOUP_VCS_USERNAME": "danifv27",
+                "SOUP_ALERT_TAGS": "sre,soup,papp",
+                "SOUP_ALERT_PRIORITY": "P4",
+                "SOUP_ALERT_APIKEY": "0773df31-e544-4454-a6b3-6f6a8eb7f360",
+                "SOUP_K8S_PATH": "/Users/fraildan/.kube/config.soup"
             },
             "args": [
                 "sync",
-                "--path",
-                "http://localhost:8001",
+                "repo",
                 "https://github.com/danifv27/helloDeploy.git",
-                "as",
-                "danifv27",
-                "withtoken",
-                "--logging.level=debug",
+                "--k8s.context=aws-sre-dev"
+
             ],
-            "showLog": true
-        },{
-            "name": "Sync GitHub",
+            "showLog": true,
+        },
+        {
+            "name": "Webhook Bitbucket With Envars",
             "type": "go",
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/soup",
             "env": {
-                "SOUP_SYNC_TOKEN": "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"
+                "SOUP_VCS_TOKEN": "dummytoken",
+                "SOUP_ALERT_TAGS": "sre,soup,papp",
+                "SOUP_ALERT_PRIORITY": "P4",
+                "SOUP_ALERT_APIKEY": "0773df31-e544-4454-a6b3-6f6a8eb7f360",
+                "SOUP_K8S_PATH": "/Users/fraildan/.kube/config.soup"
             },
             "args": [
                 "sync",
-                "https://github.com/danifv27/goHelloWorld.git",
-                "as",
-                "dummy",
-                "withtoken",
+                "serve",
+                "--vcs.username=fraildan",
+                "https://github.com/danifv27/helloDeploy.git"
+
             ],
             "showLog": true
-        },{
-            "name": "Sync GitHub",
-            "type": "go",
-            "request": "launch",
-            "mode": "debug",
-            "program": "${workspaceFolder}/cmd/soup",
-            "env": {
-                "SOUP_TOKEN": "kkdlvk"
-            },
-            "args": [
-                "sync",
-                "https://github.com/danifv27/goHelloWorld.git",
-                "as",
-                "dummy",
-                "withtoken",
-                "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"
-            ],
-            "showLog": true
-        },{
-            "name": "Sync Bitbucket",
+        },
         {
             "name": "Attach Webhook Bitbucket With Envars",
             "type": "go",
