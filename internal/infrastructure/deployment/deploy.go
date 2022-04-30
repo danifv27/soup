@@ -59,7 +59,7 @@ func clusterConfig(path string, context *string) (*krest.Config, error) {
 		config, err = kcmd.BuildConfigFromFlags(path, "")
 	} else {
 		// creates the rest configuration. If neither masterUrl or kubeconfigPath are passed in we fallback to inClusterConfig
-		if context != nil {
+		if context == nil {
 			config, err = kcmd.BuildConfigFromFlags("", path)
 		} else {
 			rules := kcmd.NewDefaultClientConfigLoadingRules()
