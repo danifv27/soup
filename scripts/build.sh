@@ -76,9 +76,18 @@ if [ "${GOARCH}" = "arm" ]; then
   # GOARM="6"
 fi
 
-go build \
-    -o ${OUTPUT} \
-    -installsuffix "static" \
-    ./cmd/**/*.go
+cmd="go build -o ${OUTPUT} -installsuffix \"static\""
+    
+if [ ! -z "${DEBUG}" ]; then
+  # Here `-N` will disable optimization and `-l` disable inlining. 
+  cmd="${cmd} -gcflags \"all=-N -l\""    
+fi
+cmd="${cmd} ./cmd/**/*.go"
+
+eval "${cmd}"
+# go build \
+#     -o ${OUTPUT} \
+#     -installsuffix "static" \
+#     ./cmd/**/*.go
 
 rm -f ${VERSION_JSON}; touch ${VERSION_JSON}

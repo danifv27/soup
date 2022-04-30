@@ -13,8 +13,8 @@ BIN ?= soup
 PKG := github.com/danifv27/soup
 
 # Where to push the docker image.
-DOCKER_REGISTRY ?= registry.hub.docker.com
-
+# DOCKER_REGISTRY ?= registry.hub.docker.com
+DOCKER_REGISTRY ?= registry.tools.3stripes.net
 
 # Which architecture to build - see $(ALL_ARCH) for options.
 # if the 'local' rule is being run, detect the ARCH from 'go env'
@@ -47,7 +47,11 @@ BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
 # Set default base image dynamically for each arch
 ifeq ($(GOARCH),amd64)
+ifeq ($(DEBUG),true)
+	DOCKERFILE ?= Dockerfile.$(BIN).debug
+else
 	DOCKERFILE ?= Dockerfile.$(BIN)
+endif
 endif
 
 GIT_COMMIT=$(shell git rev-parse HEAD)
@@ -91,6 +95,7 @@ output/$(GOOS)/$(GOARCH)/bin/$(BIN): build-dirs
 	BUILDUSER=$(VCS_USER) \
 	PKG=$(PKG) \
 	BIN=$(BIN) \
+	DEBUG=$(DEBUG) \
 	OUTPUT_DIR=./output/$(GOOS)/$(GOARCH)/bin \
 	./scripts/build.sh
 
@@ -105,6 +110,7 @@ local: build-dirs ## Build application for the local arch
 	PKG=$(PKG) \
 	BIN=$(BIN) \
 	OUTPUT_DIR=$$(pwd)/output/$(GOOS)/$(GOARCH)/bin \
+	DEBUG=$(DEBUG) \
 	scripts/build.sh
 
 PHONY: build-dirs

@@ -1,0 +1,36 @@
+# build stage
+FROM golang:alpine AS build-env
+
+RUN apk add --update --no-cache openssl git make && rm -rf /var/cache/apk/*
+RUN CGO_ENABLED=0 go install -ldflags "-s -w -extldflags '-static'" github.com/go-delve/delve/cmd/dlv@v1.8.3
+ADD . /src
+RUN cd /src && DEBUG=true make build-linux-amd64
+
+# final stage
+FROM alpine
+
+RUN mkdir -p /app/bin; mkdir -p /app/config
+# Fix supervisord "Cannot open an HTTP server: socket.error reported errno.EACCES" error
+RUN chmod 777 /run
+
+ARG user_name=soup
+ARG user_id=42924
+
+# Adding shadow package to install necessary commands in order to create users
+RUN \
+	apk add --update --no-cache git shadow \
+	&& useradd -u $user_id -c "$user_name System Account" -U -m $user_name
+#Add delve to current build
+COPY --from=build-env /go/bin/dlv /usr/local/bin
+COPY --from=build-env /src/output/linux/amd64/bin/soup /app/bin
+
+RUN chown 42924 -R /app
+
+WORKDIR /app
+# Use an unprivileged user.
+USER $user_id
+
+# executable
+ENTRYPOINT [ "/usr/local/bin/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "exec", "/app/bin/soup" ]
+# arguments that can be overridden
+CMD ["version"]
