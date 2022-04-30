@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/danifv27/soup/internal/application/logger"
@@ -26,18 +27,24 @@ func NewGitRepo(l logger.Logger) GitRepo {
 	}
 }
 
-func (g *GitRepo) Init(url string, username string, token string) error {
+func (g *GitRepo) Init(address string, username string, token string) error {
+	var u *url.URL
+	var err error
 
 	if g.info == nil {
 		g.info = new(soup.GitInfo)
 	}
-	g.info.Url = url
 	if username == "" {
 		g.info.Username = "dummy"
 	} else {
 		g.info.Username = username
 	}
 	g.info.Token = token
+	if u, err = url.Parse(address); err != nil {
+		return err
+	}
+	u.User = url.UserPassword(g.info.Username, g.info.Token)
+	g.info.Url = u.String()
 
 	return nil
 }
@@ -156,7 +163,9 @@ func (g *GitRepo) LsRemote() error {
 		return fmt.Errorf("lsremote: git repo not initialized")
 	}
 	g.logger.WithFields(logger.Fields{
-		"info": g.info,
+		"url":      g.info.Url,
+		"username": g.info.Username,
+		"token":    g.info.Token,
 	}).Debug("ls-remote repository")
 	// Authentication
 	auth := transport.BasicAuth{
