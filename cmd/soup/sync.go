@@ -38,16 +38,16 @@ type SyncCmd struct {
 	Serve    ServeSubcmd `cmd:"" help:"Serve reconcialiation webhook"`
 }
 
-func initialize(cli *CLI, f *WasSetted) (application.Applications, error) {
+func initialize(cli *CLI, path string, vcs VCS, f *WasSetted) (application.Applications, error) {
 	var apps application.Applications
 
 	infra, err := infrastructure.NewAdapters()
 	if err != nil {
 		return application.Applications{}, err
 	}
-	err = infra.GitRepository.Init(cli.Sync.Repo.Path,
-		cli.Sync.Repo.VCS.Username,
-		cli.Sync.Repo.VCS.Withtoken)
+	err = infra.GitRepository.Init(path,
+		vcs.Username,
+		vcs.Withtoken)
 	if err != nil {
 		return application.Applications{}, err
 	}
@@ -84,7 +84,7 @@ func (cmd *RepoSubcmd) Run(cli *CLI, f *WasSetted) error {
 	var err error
 	var apps application.Applications
 
-	if apps, err = initialize(cli, f); err != nil {
+	if apps, err = initialize(cli, cmd.Path, cmd.VCS, f); err != nil {
 		return err
 	}
 
@@ -125,7 +125,7 @@ func (cmd *ServeSubcmd) Run(cli *CLI, f *WasSetted) error {
 	var err error
 	var apps application.Applications
 
-	if apps, err = initialize(cli, f); err != nil {
+	if apps, err = initialize(cli, cmd.Path, cmd.VCS, f); err != nil {
 		return err
 	}
 
