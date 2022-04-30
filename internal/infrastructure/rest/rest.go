@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"sync"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/danifv27/soup/internal/application"
+	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/infrastructure/executor"
 	"github.com/danifv27/soup/internal/infrastructure/rest/bitbucket"
 	"github.com/danifv27/soup/internal/infrastructure/rest/probes"
@@ -44,19 +46,26 @@ func (s *Server) addProbeRoutes() {
 
 	s.router.HandleFunc(s.root+"/liveness", probes.NewHandler(s.apps).GetLiveness).Methods("GET")
 	s.router.HandleFunc(s.root+"/readiness", probes.NewHandler(s.apps).GetReadiness).Methods("GET")
+	s.apps.LoggerService.WithFields(logger.Fields{
+		"first":  fmt.Sprintf("GET %s/liveness", s.root),
+		"second": fmt.Sprintf("GET %s/readiness", s.root),
+	}).Debug("Routes added")
 }
 
-func (s *Server) addWebhookRoutes() {
+func (s *Server) addWebhookRoutes(secret string) {
 
-	s.router.HandleFunc(s.root+"/webhook", bitbucket.NewHandler(s.apps).WebhookEvent).Methods("POST")
+	s.router.HandleFunc(s.root+"/webhook", bitbucket.NewHandler(s.apps, secret).WebhookEvent).Methods("POST")
 	// s.router.HandleFunc(s.root+"/webhook", bitbucket.NewHandler(s.apps).WebhookEvent).Methods("GET")
+	s.apps.LoggerService.WithFields(logger.Fields{
+		"first": fmt.Sprintf("POST %s/webhook", s.root),
+	}).Debug("Routes added")
 }
 
-func (s *Server) Start(address string, wg *sync.WaitGroup, enableWebhook bool) {
+func (s *Server) Start(address string, wg *sync.WaitGroup, enableWebhook bool, secret string) {
 
 	s.addProbeRoutes()
 	if enableWebhook {
-		s.addWebhookRoutes()
+		s.addWebhookRoutes(secret)
 	}
 	s.httpServer = &http.Server{
 		Addr:    address,

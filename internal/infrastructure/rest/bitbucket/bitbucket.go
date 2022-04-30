@@ -17,11 +17,11 @@ type Handler struct {
 }
 
 //NewHandler Constructor
-func NewHandler(app application.Applications) *Handler {
+func NewHandler(app application.Applications, secret string) *Handler {
 	var hook *bitbucketserver.Webhook
 	var err error
 
-	if hook, err = bitbucketserver.New(bitbucketserver.Options.Secret("elsecretomasoscuro")); err != nil {
+	if hook, err = bitbucketserver.New(bitbucketserver.Options.Secret(secret)); err != nil {
 		return nil
 	}
 
