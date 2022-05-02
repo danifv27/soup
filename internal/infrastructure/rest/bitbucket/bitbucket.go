@@ -2,6 +2,7 @@ package bitbucket
 
 import (
 	"net/http"
+	"strings"
 
 	bitbucketserver "github.com/go-playground/webhooks/v6/bitbucket-server"
 
@@ -67,15 +68,18 @@ func (c Handler) WebhookEvent(w http.ResponseWriter, r *http.Request) {
 		for _, r := range refChanged.Changes {
 			c.apps.LoggerService.WithFields(logger.Fields{
 				"branches": r.ReferenceID,
+				"type":     r.Type,
 			}).Info("RepositoryReferenceChangedEvent")
-			err = c.apps.Commands.ProcessBranch.Handle(commands.ProcessBranchRequest{Branch: r.ReferenceID})
-			if err != nil {
-				c.apps.LoggerService.WithFields(logger.Fields{
-					"err":    err.Error(),
-					"branch": r.ReferenceID,
-				}).Warn("Can not process branch")
-				w.WriteHeader(http.StatusInternalServerError)
-				return
+			//Do not try to process deleted branches
+			if !(strings.EqualFold(r.Type, "DELETE")) {
+				err = c.apps.Commands.ProcessBranch.Handle(commands.ProcessBranchRequest{Branch: r.ReferenceID})
+				if err != nil {
+					c.apps.LoggerService.WithFields(logger.Fields{
+						"err":    err.Error(),
+						"branch": r.ReferenceID,
+					}).Warn("Can not process branch")
+					w.WriteHeader(http.StatusInternalServerError)
+				}
 			}
 		}
 	}

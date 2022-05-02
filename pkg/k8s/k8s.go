@@ -22,6 +22,7 @@ func DoSSA(ctx context.Context, cfg *rest.Config, namespace string, yamlFile []b
 	var decUnstructured = yamlk8s.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 
 	// 1. Prepare a RESTMapper to find GVR
+	// DiscoveryClient queries API server about the resources
 	dc, err := discovery.NewDiscoveryClientForConfig(cfg)
 	if err != nil {
 		return err
@@ -41,7 +42,7 @@ func DoSSA(ctx context.Context, cfg *rest.Config, namespace string, yamlFile []b
 		return err
 	}
 
-	// 4. Find GVR
+	// 4. Find the corresponding GVR (available in *meta.RESTMapping) for GVK
 	mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 	if err != nil {
 		return err
