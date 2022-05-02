@@ -83,7 +83,7 @@ func (h processBranchRequestHandler) checkoutAndProcess(branchName string, clone
 		HonorKustomizeFlags(krusty.MakeDefaultOptions()),
 	)
 	for _, k := range info.Kustomizations {
-		if strings.Contains(branchName, k.Branch) {
+		if !strings.Contains(branchName, k.Branch) {
 			continue
 		}
 		m, err := kst.Run(fSys, fmt.Sprintf("%s/%s", info.Root, k.Overlay))

@@ -100,7 +100,7 @@ func (d *DeployRepo) Deploy(namespace string, yaml []byte) error {
 
 	config, err := clusterConfig(d.info.Path, d.info.Context)
 	if err != nil {
-		return fmt.Errorf("init: %w", err)
+		return fmt.Errorf("deploy: %w", err)
 	}
 	ctx := context.TODO()
 	if err = k8s.DoSSA(ctx, config, namespace, yaml); err != nil {
