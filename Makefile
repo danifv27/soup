@@ -49,8 +49,10 @@ BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 ifeq ($(GOARCH),amd64)
 ifeq ($(DEBUG),true)
 	DOCKERFILE ?= Dockerfile.$(BIN).debug
+	VERSION_SUFFIX := -DBG
 else
 	DOCKERFILE ?= Dockerfile.$(BIN)
+	VERSION_SUFFIX := 
 endif
 endif
 
@@ -74,7 +76,7 @@ init: ./go.mod ## Initialize the module
 	$(Q)go mod tidy
 
 .PHONY: all
-all: test build
+all: package tag push
 
 # GNU make required targets declared as .PHONY to be explicit
 BUILD_PHONY_TARGETS = build-linux-amd64 build-darwin-amd64 build-windows-amd64 build-linux-arm
@@ -157,14 +159,14 @@ package: ## Create a docker image of the project
 tag: ## Tag image created by package with latest, git commit and version
 	@echo "Tagging image: ${VERSION} $(GIT_COMMIT)"
 	$(Q)docker tag $(IMAGE_NAME_LC):local $(IMAGE_NAME_LC):$(GIT_SHORT_COMMIT)
-	$(Q)docker tag $(IMAGE_NAME_LC):local $(IMAGE_NAME_LC):${VERSION}
+	$(Q)docker tag $(IMAGE_NAME_LC):local $(IMAGE_NAME_LC):${VERSION}${VERSION_SUFFIX}
 
 .PHONY: push
 push: tag ## Push tagged images to docker registry
 	@echo "Pushing docker image to registry: ${VERSION} $(GIT_SHORT_COMMIT)"
 #	$(Q)(echo $(BASE64_PASSWORD) | base64 --decode | docker login -u danifv27 --password-stdin $(DOCKER_REGISTRY))
 	$(Q)docker push $(IMAGE_NAME_LC):$(GIT_SHORT_COMMIT)
-	$(Q)docker push $(IMAGE_NAME_LC):${VERSION}
+	$(Q)docker push $(IMAGE_NAME_LC):${VERSION}${VERSION_SUFFIX}
 #	$(Q)docker logout $(DOCKER_REGISTRY)
 
 .PHONY: help
