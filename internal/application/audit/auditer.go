@@ -27,6 +27,6 @@ type ReadLogOption struct {
 
 type Auditer interface {
 	Log(event *Event) error
-	ReadLog(option *ReadLogOption) ([]*Event, error)
+	ReadLog(option *ReadLogOption) ([]Event, error)
 	TotalCount(option *ReadLogOption) (int, error)
 }

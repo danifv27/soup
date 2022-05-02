@@ -36,6 +36,54 @@ func setupSuite(t *testing.T) (func(t *testing.T, db *CloverAuditer), *CloverAud
 	}, c
 }
 
+func TestParseURI(t *testing.T) {
+	teardownSuite, db := setupSuite(t)
+	defer teardownSuite(t, db)
+
+	type args struct {
+		uri string
+	}
+	tests := map[string]struct {
+		args       args
+		beforeTest func(a *args)
+		wantError  error
+		wantCol    string
+		wantPath   string
+	}{
+		"parse uri": {
+			args: args{
+				uri: "audit:clover?path=/tmp/soup-audit&collection=audit",
+			},
+			beforeTest: nil,
+			wantError:  nil,
+			wantCol:    "audit",
+			wantPath:   "/tmp/soup-audit",
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			var p, c string
+
+			teardownTest, err := setupTest(t)
+			defer teardownTest(t)
+			require.NoError(t, err)
+			if tt.beforeTest != nil {
+				tt.beforeTest(&tt.args)
+			}
+			p, c, err = ParseURI(tt.args.uri)
+			if !errors.Is(err, tt.wantError) {
+				t.Errorf("Unexpected error; got %v, want %v", err, tt.wantError)
+			}
+			if c != tt.wantCol {
+				t.Errorf("Unexpected collection; got %v, want %v", c, tt.wantCol)
+			}
+			if p != tt.wantPath {
+				t.Errorf("Unexpected path; got %v, want %v", c, tt.wantPath)
+			}
+		})
+	}
+}
+
 func TestLog(t *testing.T) {
 	teardownSuite, db := setupSuite(t)
 	defer teardownSuite(t, db)

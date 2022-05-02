@@ -18,9 +18,11 @@
 package infrastructure
 
 import (
+	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/domain/soup"
+	"github.com/danifv27/soup/internal/infrastructure/audit/clover"
 	"github.com/danifv27/soup/internal/infrastructure/deployment"
 	"github.com/danifv27/soup/internal/infrastructure/git"
 	"github.com/danifv27/soup/internal/infrastructure/logger/logrus"
@@ -34,6 +36,7 @@ import (
 type Adapters struct {
 	LoggerService       logger.Logger
 	NotificationService notification.Notifier
+	AuditService        audit.Auditer
 	VersionRepository   soup.Version
 	GitRepository       soup.Git
 	DeployRepository    soup.Deploy
@@ -41,11 +44,15 @@ type Adapters struct {
 	ProbeRepository     soup.Probe
 }
 
-func NewAdapters() (Adapters, error) {
+func NewAdapters(uri string) (Adapters, error) {
 	var err error
 	var n *opsgenie.OpsgenieService
+	var a audit.Auditer
 
 	l := logrus.NewLoggerService()
+	if a, err = clover.NewCloverAuditer(uri); err != nil {
+		return Adapters{}, err
+	}
 	r := git.NewGitRepo(l)
 	c := config.NewSoupRepo(".")
 	d := deployment.NewDeployRepo(l)
@@ -56,6 +63,7 @@ func NewAdapters() (Adapters, error) {
 	return Adapters{
 		LoggerService:       l,
 		NotificationService: n,
+		AuditService:        a,
 		VersionRepository:   embed.NewVersionRepo(),
 		GitRepository:       &r,
 		DeployRepository:    &d,

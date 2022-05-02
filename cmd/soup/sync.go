@@ -42,7 +42,7 @@ type SyncCmd struct {
 func initialize(cli *CLI, path string, vcs VCS, f *WasSetted) (application.Applications, error) {
 	var apps application.Applications
 
-	infra, err := infrastructure.NewAdapters()
+	infra, err := infrastructure.NewAdapters(cli.Logging.AuditDb)
 	if err != nil {
 		return application.Applications{}, err
 	}
@@ -70,6 +70,7 @@ func initialize(cli *CLI, path string, vcs VCS, f *WasSetted) (application.Appli
 
 	apps = application.NewApplications(infra.LoggerService,
 		infra.NotificationService,
+		infra.AuditService,
 		infra.VersionRepository,
 		infra.GitRepository,
 		infra.DeployRepository,

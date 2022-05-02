@@ -9,8 +9,9 @@ import (
 )
 
 type Log struct {
-	Level  string `enum:"debug,info,warn,error,fatal" help:"Set the logging level (debug|info|warn|error|fatal)" default:"info" env:"SOUP_LOGGING_LEVEL"`
-	Format string `help:"The log target and format. Example: logger:syslog?appname=bob&local=7 or logger:stdout?json=true" default:"logger:stdout?json=false" env:"SOUP_LOGGING_FORMAT"`
+	Level   string `enum:"debug,info,warn,error,fatal" help:"Set the logging level (debug|info|warn|error|fatal)" default:"info" env:"SOUP_LOGGING_LEVEL"`
+	Format  string `help:"The log target and format. Example: logger:syslog?appname=bob&local=7 or logger:stdout?json=true" default:"logger:stdout?json=false" env:"SOUP_LOGGING_FORMAT"`
+	AuditDb string `help."Path to audit database" env:"SOUP_LOGGING_AUDIT_PATH" hidden:"" default:"audit:clover?path=/tmp/soup-audit&collection=audit"`
 }
 
 type Actuator struct {

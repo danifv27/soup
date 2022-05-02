@@ -12,6 +12,7 @@
 package application
 
 import (
+	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/application/soup/commands"
@@ -37,15 +38,15 @@ type Commands struct {
 type Applications struct {
 	LoggerService logger.Logger
 	Notifier      notification.Notifier
-	// AuditService  audit.Auditer
-	Queries  Queries
-	Commands Commands
+	Auditer       audit.Auditer
+	Queries       Queries
+	Commands      Commands
 }
 
 // NewApplications Bootstraps Application Layer dependencies
 func NewApplications(logger logger.Logger,
 	notifier notification.Notifier,
-	// auditer audit.Auditer,
+	auditer audit.Auditer,
 	version soup.Version,
 	git soup.Git,
 	deploy soup.Deploy,
@@ -55,7 +56,7 @@ func NewApplications(logger logger.Logger,
 	return Applications{
 		LoggerService: logger,
 		Notifier:      notifier,
-		// AuditService:  auditer,
+		Auditer:       auditer,
 		Queries: Queries{
 			GetVersionInfoHandler:   queries.NewGetVersionInfoHandler(version),
 			GetLivenessInfoHandler:  queries.NewGetLivenessInfoHandler(probes),
