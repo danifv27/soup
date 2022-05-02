@@ -58,7 +58,9 @@ func (g *GitRepo) PlainClone(location string) error {
 	}
 	g.logger.WithFields(logger.Fields{
 		"location": location,
-		"info":     g.info,
+		"url":      g.info.Url,
+		"username": g.info.Username,
+		"token":    g.info.Token,
 	}).Info("Cloning git repository")
 	// Authentication
 	auth := transport.BasicAuth{
@@ -144,8 +146,13 @@ func (g *GitRepo) Checkout(branchName string) error {
 			return fmt.Errorf("checkout: %w", err)
 		}
 	}
+	ref := plumbing.ReferenceName(branchName)
+	if !(ref.IsBranch() || ref.IsTag()) {
+		//if not branch or tag, assume branch
+		ref = plumbing.NewBranchReferenceName(branchName)
+	}
 	err = g.worktree.Checkout(&gogit.CheckoutOptions{
-		Branch: plumbing.ReferenceName("refs/heads/" + branchName),
+		Branch: ref,
 		Force:  true,
 	})
 	if err != nil {
