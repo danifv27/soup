@@ -43,7 +43,7 @@ func (g *GitRepo) Init(address string, username string, token string) error {
 	if u, err = url.Parse(address); err != nil {
 		return err
 	}
-	u.User = url.UserPassword(g.info.Username, g.info.Token)
+	//u.User = url.UserPassword(g.info.Username, g.info.Token)
 	g.info.Url = u.String()
 
 	return nil
