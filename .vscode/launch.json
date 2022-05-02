@@ -70,8 +70,8 @@
             "port":40000,
 			"host":"127.0.0.1",
 			"showLog": true,
-			"trace": "log",
-			"logOutput": "rpc"
+			"trace": "verbose",
+			"logOutput": "debugger"
         }
     ]
 }
