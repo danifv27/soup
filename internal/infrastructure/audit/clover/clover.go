@@ -13,6 +13,7 @@ import (
 type CloverAuditer struct {
 	db         *clover.DB
 	collection string
+	path       string
 }
 
 func ParseURI(uri string) (string, string, error) {
@@ -44,22 +45,23 @@ func ParseURI(uri string) (string, string, error) {
 	return path, col, nil
 }
 
-func NewCloverAuditer(uri string) (audit.Auditer, error) {
+func NewCloverAuditer(uri string) (CloverAuditer, error) {
 	var d *clover.DB
 	var err error
 	var dbPath, col string
 
 	if dbPath, col, err = ParseURI(uri); err != nil {
-		return nil, fmt.Errorf("NewCloverAuditer: %w", err)
+		return CloverAuditer{}, fmt.Errorf("NewCloverAuditer: %w", err)
 	}
 	if d, err = clover.Open(dbPath); err != nil {
-		return nil, fmt.Errorf("NewCloverAuditer: %w", err)
+		return CloverAuditer{}, fmt.Errorf("NewCloverAuditer: %w", err)
 	}
 	d.CreateCollection(col)
 
 	return CloverAuditer{
 		db:         d,
 		collection: col,
+		path:       dbPath,
 	}, nil
 }
 
@@ -112,7 +114,7 @@ func (c CloverAuditer) ReadLog(option *audit.ReadLogOption) ([]audit.Event, erro
 		return nil, err
 	}
 	events := make([]audit.Event, 0, size)
-	for j := range events {
+	for j := 0; j < size; j++ {
 		evt := &audit.Event{}
 		if err = docs[j].Unmarshal(&evt); err != nil {
 			return nil, err

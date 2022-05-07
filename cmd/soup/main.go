@@ -9,11 +9,14 @@ import (
 )
 
 type Log struct {
-	Level   string `enum:"debug,info,warn,error,fatal" help:"Set the logging level (debug|info|warn|error|fatal)" default:"info" env:"SOUP_LOGGING_LEVEL"`
-	Format  string `help:"The log target and format. Example: logger:syslog?appname=bob&local=7 or logger:stdout?json=true" default:"logger:stdout?json=false" env:"SOUP_LOGGING_FORMAT"`
-	AuditDb string `help."Path to audit database" env:"SOUP_LOGGING_AUDIT_PATH" hidden:"" default:"audit:clover?path=/tmp/soup-audit&collection=audit"`
+	Level  string `enum:"debug,info,warn,error,fatal" help:"Set the logging level (debug|info|warn|error|fatal)" default:"info" env:"SOUP_LOGGING_LEVEL"`
+	Format string `help:"The log target and format. Example: logger:syslog?appname=bob&local=7 or logger:stdout?json=true" default:"logger:stdout?json=false" env:"SOUP_LOGGING_FORMAT"`
 }
 
+type Auditer struct {
+	DbPath string `help:"Path to audit database" env:"SOUP_AUDIT_PATH" hidden:"" default:"audit:clover?path=/tmp/soup-audit&collection=audit"`
+	Enable bool   `help:"Enable audit endpoint" env:"SOUP_AUDIT_ENABLE_ENDPOINT" hidden:"" default:"true"`
+}
 type Actuator struct {
 	Port string `help:"actuator port" default:":8081" env:"SOUP_SYNC_ACTUATOR_PORT" optional:""`
 	Root string `help:"actuator root" default:"/probe" env:"SOUP_SYNC_ACTUATOR_ROOT" optional:"" hidden:""`
@@ -29,6 +32,7 @@ type Alert struct {
 
 type CLI struct {
 	Logging Log        `embed:"" prefix:"logging."`
+	Audit   Auditer    `embed:"" prefix:"audit."`
 	Alert   Alert      `embed:"" prefix:"alert."`
 	Version VersionCmd `cmd:"" help:"Show the version information"`
 	Sync    SyncCmd    `cmd:"" help:"Sync kubernetes with VCS contents"`

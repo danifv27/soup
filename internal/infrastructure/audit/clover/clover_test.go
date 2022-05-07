@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/stretchr/testify/require"
@@ -21,19 +22,18 @@ func setupTest(t *testing.T) (func(t *testing.T), error) {
 
 // You can use testing.T, if you want to test the code without benchmarking
 func setupSuite(t *testing.T) (func(t *testing.T, db *CloverAuditer), *CloverAuditer) {
-	log.Println("setup suite")
 
 	dir, err := ioutil.TempDir("", "clover-test")
 	require.NoError(t, err) //stops test execution if fail
-
-	c, err := NewCloverAuditer(dir, "test")
+	log.Printf("setting up suite (dir: %s)", dir)
+	c, err := NewCloverAuditer(fmt.Sprintf("audit:clover?path=%s&collection=test", dir))
 	require.NoError(t, err) //stops test execution if fail
 
 	// Return a function to teardown the test
 	return func(t *testing.T, db *CloverAuditer) {
 		log.Println("teardown suite")
 		db.Close()
-	}, c
+	}, &c
 }
 
 func TestParseURI(t *testing.T) {
@@ -100,7 +100,7 @@ func TestLog(t *testing.T) {
 		"insert one document": {
 			args: args{},
 			beforeTest: func(a *args) {
-				a.events = make([]audit.Event, 0, 7)
+				a.events = make([]audit.Event, 7)
 				for j := 0; j < 1; j++ {
 					a.events = append(a.events, audit.Event{
 						Action:  "repo:refs_changed",
@@ -115,7 +115,7 @@ func TestLog(t *testing.T) {
 		"insert multiple documents": {
 			args: args{},
 			beforeTest: func(a *args) {
-				a.events = make([]audit.Event, 0, 7)
+				a.events = make([]audit.Event, 7)
 				for j := 0; j < 7; j++ {
 					a.events = append(a.events, audit.Event{
 						Action:  "repo:refs_changed",
@@ -143,7 +143,11 @@ func TestLog(t *testing.T) {
 					t.Errorf("Unexpected error; got %v, want %v", err, tt.wantError)
 				}
 			}
-			regs, err := db.Count()
+			option := audit.ReadLogOption{
+				StartTime: new(time.Time),
+				EndTime:   new(time.Time),
+			}
+			regs, err := db.TotalCount(&option)
 			if !errors.Is(err, tt.wantError) {
 				t.Errorf("Unexpected error; got %v, want %v", err, tt.wantError)
 			}
@@ -172,7 +176,10 @@ func TestReadLog(t *testing.T) {
 		"read all documents": {
 			args: args{},
 			beforeTest: func(a *args) {
-				a.events = make([]audit.Event, 0, 7)
+				a.events = make([]audit.Event, 7)
+				a.option = new(audit.ReadLogOption)
+				a.option.StartTime = new(time.Time)
+				a.option.EndTime = new(time.Time)
 				for j := 0; j < 9; j++ {
 					a.events = append(a.events, audit.Event{
 						Action:  "repo:refs_changed",
@@ -196,7 +203,7 @@ func TestReadLog(t *testing.T) {
 			if tt.beforeTest != nil {
 				tt.beforeTest(&tt.args)
 			}
-			events, err := db.ReadLog(nil)
+			events, err := db.ReadLog(tt.args.option)
 			if err != nil {
 				t.Errorf("Can not read audit log; got %v", err)
 			}
