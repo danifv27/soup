@@ -12,11 +12,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (func(t *testing.T), error) {
-	log.Println("setup test")
+func setupTest(t *testing.T, name string, db *CloverAuditer) (func(t *testing.T, name string, db *CloverAuditer), error) {
+	log.Printf("setting up test: %s", name)
+	db.collection = name
+	// Check if collection already exists
+	collectionExists, _ := db.HasCollection(db.collection)
+	if !collectionExists {
+		db.CreateCollection(db.collection)
+		size, _ := db.TotalCount(nil)
+		log.Printf("collection %s created, size %d", db.collection, size)
+	}
 	// Return a function to teardown the suite
-	return func(t *testing.T) {
-		log.Println("teardown test")
+	return func(t *testing.T, name string, db *CloverAuditer) {
+		log.Printf("teardown test: %s", name)
+		// Check if collection already exists
+		collectionExists, _ := db.HasCollection(db.collection)
+		if collectionExists {
+			db.DropCollection(db.collection)
+			log.Printf("collection %s dropped", db.collection)
+		}
 	}, nil
 }
 
@@ -64,8 +78,8 @@ func TestParseURI(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			var p, c string
 
-			teardownTest, err := setupTest(t)
-			defer teardownTest(t)
+			teardownTest, err := setupTest(t, name, db)
+			defer teardownTest(t, name, db)
 			require.NoError(t, err)
 			if tt.beforeTest != nil {
 				tt.beforeTest(&tt.args)
@@ -97,10 +111,9 @@ func TestLog(t *testing.T) {
 		wantError  error
 		wantRc     int
 	}{
-		"insert one document": {
+		"insertOneDocument": {
 			args: args{},
 			beforeTest: func(a *args) {
-				a.events = make([]audit.Event, 7)
 				for j := 0; j < 1; j++ {
 					a.events = append(a.events, audit.Event{
 						Action:  "repo:refs_changed",
@@ -112,10 +125,9 @@ func TestLog(t *testing.T) {
 			wantError: nil,
 			wantRc:    1,
 		},
-		"insert multiple documents": {
+		"insertMultipleDocuments": {
 			args: args{},
 			beforeTest: func(a *args) {
-				a.events = make([]audit.Event, 7)
 				for j := 0; j < 7; j++ {
 					a.events = append(a.events, audit.Event{
 						Action:  "repo:refs_changed",
@@ -125,14 +137,14 @@ func TestLog(t *testing.T) {
 				}
 			},
 			wantError: nil,
-			wantRc:    8, //Because we do not remove elements from previous test
+			wantRc:    7, //Because we do not remove elements from previous test
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			teardownTest, err := setupTest(t)
-			defer teardownTest(t)
+			teardownTest, err := setupTest(t, name, db)
+			defer teardownTest(t, name, db)
 			require.NoError(t, err)
 			if tt.beforeTest != nil {
 				tt.beforeTest(&tt.args)
@@ -143,11 +155,7 @@ func TestLog(t *testing.T) {
 					t.Errorf("Unexpected error; got %v, want %v", err, tt.wantError)
 				}
 			}
-			option := audit.ReadLogOption{
-				StartTime: new(time.Time),
-				EndTime:   new(time.Time),
-			}
-			regs, err := db.TotalCount(&option)
+			regs, err := db.TotalCount(nil)
 			if !errors.Is(err, tt.wantError) {
 				t.Errorf("Unexpected error; got %v, want %v", err, tt.wantError)
 			}
@@ -176,10 +184,69 @@ func TestReadLog(t *testing.T) {
 		"read all documents": {
 			args: args{},
 			beforeTest: func(a *args) {
-				a.events = make([]audit.Event, 7)
 				a.option = new(audit.ReadLogOption)
 				a.option.StartTime = new(time.Time)
 				a.option.EndTime = new(time.Time)
+				for j := 0; j < 8; j++ {
+					a.events = append(a.events, audit.Event{
+						Action:  "repo:refs_changed",
+						Actor:   "fraildan",
+						Message: fmt.Sprintf("refs/heads/master-%d", j),
+					})
+					err := db.Log(&a.events[j])
+					require.NoError(t, err) //stops test execution if fail
+				}
+			},
+			wantError: nil,
+			wantRc:    8,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			teardownTest, err := setupTest(t, name, db)
+			defer teardownTest(t, name, db)
+			require.NoError(t, err)
+			if tt.beforeTest != nil {
+				tt.beforeTest(&tt.args)
+			}
+			events, err := db.ReadLog(tt.args.option)
+			if err != nil {
+				t.Errorf("Can not read audit log; got %v", err)
+			}
+			if len(events) != tt.wantRc {
+				t.Errorf("Wrong number of registers; got %v, want %v", len(events), tt.wantRc)
+			}
+		})
+	}
+}
+
+func TestTotalCount(t *testing.T) {
+	teardownSuite, db := setupSuite(t)
+	defer teardownSuite(t, db)
+
+	type args struct {
+		events []audit.Event
+		option *audit.ReadLogOption
+	}
+
+	tests := map[string]struct {
+		args       args
+		beforeTest func(a *args)
+		wantError  error
+		wantRc     int
+	}{
+		"countAllDocuments": {
+			args: args{},
+			beforeTest: func(a *args) {
+				a.option = new(audit.ReadLogOption)
+				start := time.Now().Add(-time.Minute * 5).UTC()
+				a.option.StartTime = &start
+				end := time.Now().Add(time.Minute * 5).UTC()
+				a.option.EndTime = &end
+				// log.Printf("time.Now(): %s", time.Now())
+				// log.Printf("start: %s", a.option.StartTime)
+				// log.Printf("end: %s", a.option.EndTime)
 				for j := 0; j < 9; j++ {
 					a.events = append(a.events, audit.Event{
 						Action:  "repo:refs_changed",
@@ -193,22 +260,49 @@ func TestReadLog(t *testing.T) {
 			wantError: nil,
 			wantRc:    9,
 		},
+		"countOldDocuments": {
+			args: args{},
+			beforeTest: func(a *args) {
+				a.option = new(audit.ReadLogOption)
+				start := time.Now().UTC()
+				a.option.StartTime = &start
+				end := start.Add(time.Second * 15).UTC()
+				a.option.EndTime = &end
+				log.Printf("time.Now().UTC(): %s", time.Now().UTC())
+				log.Printf("start: %s", a.option.StartTime)
+				log.Printf("end: %s", a.option.EndTime)
+				for j := 0; j < 9; j++ {
+					a.events = append(a.events, audit.Event{
+						Action:  "repo:refs_changed",
+						Actor:   "fraildan",
+						Message: fmt.Sprintf("refs/heads/master-%d", j),
+					})
+					err := db.Log(&a.events[j])
+					require.NoError(t, err) //stops test execution if fail
+					time.Sleep(time.Second * 3)
+				}
+				db.ExportCollection(db.collection, fmt.Sprintf("%s/%s.json", db.path, db.collection))
+			},
+			wantError: nil,
+			wantRc:    5,
+		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			teardownTest, err := setupTest(t)
-			defer teardownTest(t)
+			teardownTest, err := setupTest(t, name, db)
+			defer teardownTest(t, name, db)
 			require.NoError(t, err)
 			if tt.beforeTest != nil {
 				tt.beforeTest(&tt.args)
 			}
-			events, err := db.ReadLog(tt.args.option)
+
+			size, err := db.TotalCount(tt.args.option)
 			if err != nil {
 				t.Errorf("Can not read audit log; got %v", err)
 			}
-			if len(events) != tt.wantRc {
-				t.Errorf("Wrong number of registers; got %v, want %v", len(events), tt.wantRc)
+			if size != tt.wantRc {
+				t.Errorf("Wrong number of registers; got %v, want %v", size, tt.wantRc)
 			}
 		})
 	}

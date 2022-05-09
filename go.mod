@@ -8,7 +8,7 @@ require (
 	github.com/go-playground/webhooks/v6 v6.0.0-rc.1
 	github.com/gorilla/mux v1.8.0
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.10
-	github.com/ostafen/clover v1.0.1
+	github.com/ostafen/clover v1.1.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1

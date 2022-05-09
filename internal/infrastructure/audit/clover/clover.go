@@ -130,6 +130,10 @@ func (c CloverAuditer) TotalCount(option *audit.ReadLogOption) (int, error) {
 	var err error
 	var size int
 
+	if option == nil {
+		return c.db.Query(c.collection).Count()
+	}
+
 	if option.StartTime == nil {
 		return -1, fmt.Errorf("TotalCount: %s", "start time can't be nil")
 	}
@@ -139,18 +143,34 @@ func (c CloverAuditer) TotalCount(option *audit.ReadLogOption) (int, error) {
 	if option.StartTime.After(*option.EndTime) {
 		return -1, fmt.Errorf("TotalCount: %s", "end time can't be before start time")
 	}
-
-	if size, err = c.db.Query(c.collection).Count(); err != nil {
+	query := c.db.Query(c.collection)
+	criteria := clover.Field("created_at").GtEq(*option.StartTime).And(clover.Field("created_at").Lt(*option.EndTime))
+	if size, err = query.Where(criteria).Count(); err != nil {
 		return -1, err
 	}
 
 	return size, nil
 }
 
-// func (c CloverAuditer) Count() (int, error) {
+func (c *CloverAuditer) ExportCollection(col string, path string) error {
 
-// 	return c.db.Query(c.collection).Count()
-// }
+	return c.db.ExportCollection(col, path)
+}
+
+func (c *CloverAuditer) DropCollection(col string) error {
+
+	return c.db.DropCollection(col)
+}
+
+func (c *CloverAuditer) CreateCollection(col string) error {
+
+	return c.db.CreateCollection(col)
+}
+
+func (c *CloverAuditer) HasCollection(col string) (bool, error) {
+
+	return c.db.HasCollection(col)
+}
 
 func (c *CloverAuditer) Close() error {
 
