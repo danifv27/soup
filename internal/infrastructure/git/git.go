@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/domain/soup"
 	gogit "github.com/go-git/go-git/v5"
@@ -16,14 +17,16 @@ import (
 
 type GitRepo struct {
 	logger   logger.Logger
+	auditer  audit.Auditer
 	info     *soup.GitInfo
 	repo     *gogit.Repository
 	worktree *gogit.Worktree
 }
 
-func NewGitRepo(l logger.Logger) GitRepo {
+func NewGitRepo(l logger.Logger, audit audit.Auditer) GitRepo {
 	return GitRepo{
-		logger: l,
+		logger:  l,
+		auditer: audit,
 	}
 }
 
@@ -56,6 +59,7 @@ func (g *GitRepo) PlainClone(location string) error {
 	if g.info == nil {
 		return fmt.Errorf("plainclone: git repo not initialized")
 	}
+
 	g.logger.WithFields(logger.Fields{
 		"location": location,
 		"url":      g.info.Url,
@@ -73,8 +77,14 @@ func (g *GitRepo) PlainClone(location string) error {
 	}); err != nil {
 		return fmt.Errorf("plainclone: %w", err)
 	}
-
 	g.repo = r
+
+	event := audit.Event{
+		Action:  "PlainClone",
+		Actor:   g.info.Username,
+		Message: fmt.Sprintf("cloned %s in %s", g.info.Url, location),
+	}
+	g.auditer.Log(&event)
 
 	return nil
 }
@@ -113,6 +123,13 @@ func (g *GitRepo) GetBranchNames() ([]string, error) {
 		branchNames = append(branchNames, branchName)
 	}
 
+	event := audit.Event{
+		Action:  "GetBranchNames",
+		Actor:   g.info.Username,
+		Message: fmt.Sprintf("retrieved %d branches", len(branchNames)),
+	}
+	g.auditer.Log(&event)
+
 	return branchNames, nil
 }
 
@@ -134,6 +151,12 @@ func (g *GitRepo) Fetch() error {
 		return fmt.Errorf("fetch: %w", err)
 	}
 
+	event := audit.Event{
+		Action:  "Fetch",
+		Actor:   g.info.Username,
+		Message: fmt.Sprintf("fetched %s", g.info.Url),
+	}
+	g.auditer.Log(&event)
 	return nil
 }
 
@@ -158,6 +181,12 @@ func (g *GitRepo) Checkout(branchName string) error {
 	if err != nil {
 		return fmt.Errorf("checkout: %w", err)
 	}
+	event := audit.Event{
+		Action:  "Checkout",
+		Actor:   g.info.Username,
+		Message: fmt.Sprintf("checkout %s", g.info.Url),
+	}
+	g.auditer.Log(&event)
 
 	return nil
 }
@@ -193,6 +222,13 @@ func (g *GitRepo) LsRemote() error {
 	g.logger.WithFields(logger.Fields{
 		"remotes": remotes,
 	}).Info("Remote List")
+
+	event := audit.Event{
+		Action:  "LsRemote",
+		Actor:   g.info.Username,
+		Message: fmt.Sprintf("listed %d remotes from %s", len(remotes), g.info.Url),
+	}
+	g.auditer.Log(&event)
 
 	return nil
 }

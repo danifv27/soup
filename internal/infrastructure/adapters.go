@@ -53,7 +53,7 @@ func NewAdapters(uri string) (Adapters, error) {
 	if a, err = clover.NewCloverAuditer(uri); err != nil {
 		return Adapters{}, err
 	}
-	r := git.NewGitRepo(l)
+	r := git.NewGitRepo(l, a)
 	c := config.NewSoupRepo(".")
 	d := deployment.NewDeployRepo(l)
 	if n, err = opsgenie.NewOpsgenieService(l); err != nil {
