@@ -9,6 +9,7 @@ import (
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/kyaml/filesys"
 
+	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/domain/soup"
 )
@@ -24,20 +25,22 @@ type ProcessBranchRequestHandler interface {
 }
 
 type processBranchRequestHandler struct {
-	logger logger.Logger
-	svc    soup.Git
-	config soup.Config
-	deploy soup.Deploy
+	logger  logger.Logger
+	svc     soup.Git
+	config  soup.Config
+	deploy  soup.Deploy
+	auditer audit.Auditer
 }
 
 //NewProcessBranchRequestHandler Constructor
-func NewProcessBranchRequestHandler(git soup.Git, deploy soup.Deploy, config soup.Config, logger logger.Logger) ProcessBranchRequestHandler {
+func NewProcessBranchRequestHandler(git soup.Git, deploy soup.Deploy, config soup.Config, logger logger.Logger, audit audit.Auditer) ProcessBranchRequestHandler {
 
 	return processBranchRequestHandler{
-		config: config,
-		svc:    git,
-		logger: logger,
-		deploy: deploy,
+		config:  config,
+		svc:     git,
+		logger:  logger,
+		deploy:  deploy,
+		auditer: audit,
 	}
 }
 
