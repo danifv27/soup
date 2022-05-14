@@ -65,6 +65,35 @@ func NewCloverAuditer(uri string) (CloverAuditer, error) {
 	}, nil
 }
 
+func getCriteria(option *audit.ReadLogOption) (*clover.Criteria, error) {
+
+	if option.StartTime == nil {
+		return nil, fmt.Errorf("getCriteria: %s", "start time can't be nil")
+	}
+	if option.EndTime == nil {
+		now := time.Now().UTC()
+		option.EndTime = &now
+		// return -1, fmt.Errorf("getCriteria: %s", "end time can't be nil")
+	}
+	if option.StartTime.After(*option.EndTime) {
+		return nil, fmt.Errorf("getCriteria: %s", "end time can't be before start time")
+	}
+	criteria := clover.Field("created_at").GtEq(*option.StartTime).And(clover.Field("created_at").Lt(*option.EndTime))
+
+	return criteria, nil
+}
+
+func getQuery(auditer CloverAuditer, option *audit.ReadLogOption) (*clover.Query, error) {
+
+	query := auditer.db.Query(auditer.collection)
+
+	if option.Limit > 0 {
+		return query.Limit(option.Limit), nil
+	}
+
+	return query, nil
+}
+
 func (c CloverAuditer) Log(event *audit.Event) error {
 	var err error
 	var data []byte
@@ -94,23 +123,24 @@ func (c CloverAuditer) ReadLog(option *audit.ReadLogOption) ([]audit.Event, erro
 	var err error
 	var docs []*clover.Document
 	var size int
+	var criteria *clover.Criteria
+	var query *clover.Query
 
-	if option.StartTime == nil {
-		return nil, fmt.Errorf("ReadLog: %s", "start time can't be nil")
+	if query, err = getQuery(c, option); err != nil {
+		return nil, err
 	}
-	if option.EndTime == nil {
-		return nil, fmt.Errorf("ReadLog: %s", "end time can't be nil")
+	if criteria, err = getCriteria(option); err != nil {
+		return nil, err
 	}
-	if option.StartTime.After(*option.EndTime) {
-		return nil, fmt.Errorf("ReadLog: %s", "end time can't be before start time")
-	}
-
-	query := c.db.Query(c.collection)
-	if size, err = query.Count(); err != nil {
+	if size, err = query.Where(criteria).Count(); err != nil {
 		return nil, err
 	}
 	//Find all documents between start and end time
-	if docs, err = query.FindAll(); err != nil {
+	sorting := clover.SortOption{
+		Field:     "created_at",
+		Direction: 1,
+	}
+	if docs, err = query.Sort(sorting).Where(criteria).FindAll(); err != nil {
 		return nil, err
 	}
 	events := make([]audit.Event, 0, size)
@@ -129,22 +159,18 @@ func (c CloverAuditer) ReadLog(option *audit.ReadLogOption) ([]audit.Event, erro
 func (c CloverAuditer) TotalCount(option *audit.ReadLogOption) (int, error) {
 	var err error
 	var size int
+	var query *clover.Query
+	var criteria *clover.Criteria
 
 	if option == nil {
 		return c.db.Query(c.collection).Count()
 	}
-
-	if option.StartTime == nil {
-		return -1, fmt.Errorf("TotalCount: %s", "start time can't be nil")
+	if query, err = getQuery(c, option); err != nil {
+		return -1, err
 	}
-	if option.EndTime == nil {
-		return -1, fmt.Errorf("TotalCount: %s", "end time can't be nil")
+	if criteria, err = getCriteria(option); err != nil {
+		return -1, err
 	}
-	if option.StartTime.After(*option.EndTime) {
-		return -1, fmt.Errorf("TotalCount: %s", "end time can't be before start time")
-	}
-	query := c.db.Query(c.collection)
-	criteria := clover.Field("created_at").GtEq(*option.StartTime).And(clover.Field("created_at").Lt(*option.EndTime))
 	if size, err = query.Where(criteria).Count(); err != nil {
 		return -1, err
 	}
@@ -152,9 +178,9 @@ func (c CloverAuditer) TotalCount(option *audit.ReadLogOption) (int, error) {
 	return size, nil
 }
 
-func (c *CloverAuditer) ExportCollection(col string, path string) error {
+func exportCollection(auditer CloverAuditer, col string, path string) error {
 
-	return c.db.ExportCollection(col, path)
+	return auditer.db.ExportCollection(col, path)
 }
 
 func (c *CloverAuditer) DropCollection(col string) error {

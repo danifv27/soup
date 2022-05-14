@@ -181,12 +181,14 @@ func TestReadLog(t *testing.T) {
 		wantError  error
 		wantRc     int
 	}{
-		"read all documents": {
+		"readAllDocuments": {
 			args: args{},
 			beforeTest: func(a *args) {
 				a.option = new(audit.ReadLogOption)
-				a.option.StartTime = new(time.Time)
-				a.option.EndTime = new(time.Time)
+				start := time.Now().Add(-time.Minute * 5).UTC()
+				a.option.StartTime = &start
+				end := time.Now().Add(time.Minute * 5).UTC()
+				a.option.EndTime = &end
 				for j := 0; j < 8; j++ {
 					a.events = append(a.events, audit.Event{
 						Action:  "repo:refs_changed",
@@ -196,9 +198,33 @@ func TestReadLog(t *testing.T) {
 					err := db.Log(&a.events[j])
 					require.NoError(t, err) //stops test execution if fail
 				}
+				exportCollection(*db, db.collection, fmt.Sprintf("%s/%s.json", db.path, db.collection))
 			},
 			wantError: nil,
 			wantRc:    8,
+		},
+		"readLimitedDocuments": {
+			args: args{},
+			beforeTest: func(a *args) {
+				a.option = new(audit.ReadLogOption)
+				start := time.Now().Add(-time.Minute * 5).UTC()
+				a.option.StartTime = &start
+				end := time.Now().Add(time.Minute * 5).UTC()
+				a.option.EndTime = &end
+				a.option.Limit = 4
+				for j := 0; j < 8; j++ {
+					a.events = append(a.events, audit.Event{
+						Action:  "repo:refs_changed",
+						Actor:   "fraildan",
+						Message: fmt.Sprintf("refs/heads/master-%d", j),
+					})
+					err := db.Log(&a.events[j])
+					require.NoError(t, err) //stops test execution if fail
+				}
+				exportCollection(*db, db.collection, fmt.Sprintf("%s/%s.json", db.path, db.collection))
+			},
+			wantError: nil,
+			wantRc:    4,
 		},
 	}
 
@@ -256,6 +282,7 @@ func TestTotalCount(t *testing.T) {
 					err := db.Log(&a.events[j])
 					require.NoError(t, err) //stops test execution if fail
 				}
+				exportCollection(*db, db.collection, fmt.Sprintf("%s/%s.json", db.path, db.collection))
 			},
 			wantError: nil,
 			wantRc:    9,
@@ -281,7 +308,7 @@ func TestTotalCount(t *testing.T) {
 					require.NoError(t, err) //stops test execution if fail
 					time.Sleep(time.Second * 3)
 				}
-				db.ExportCollection(db.collection, fmt.Sprintf("%s/%s.json", db.path, db.collection))
+				exportCollection(*db, db.collection, fmt.Sprintf("%s/%s.json", db.path, db.collection))
 			},
 			wantError: nil,
 			wantRc:    5,
