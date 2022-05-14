@@ -65,7 +65,7 @@ func NewCloverAuditer(uri string) (CloverAuditer, error) {
 	}, nil
 }
 
-func getCriteria(option *audit.ReadLogOption) (*clover.Criteria, error) {
+func getCriteria(option *audit.GetEventOption) (*clover.Criteria, error) {
 
 	if option.StartTime == nil {
 		return nil, fmt.Errorf("getCriteria: %s", "start time can't be nil")
@@ -83,7 +83,7 @@ func getCriteria(option *audit.ReadLogOption) (*clover.Criteria, error) {
 	return criteria, nil
 }
 
-func getQuery(auditer CloverAuditer, option *audit.ReadLogOption) (*clover.Query, error) {
+func getQuery(auditer CloverAuditer, option *audit.GetEventOption) (*clover.Query, error) {
 
 	query := auditer.db.Query(auditer.collection)
 
@@ -94,7 +94,7 @@ func getQuery(auditer CloverAuditer, option *audit.ReadLogOption) (*clover.Query
 	return query, nil
 }
 
-func (c CloverAuditer) Log(event *audit.Event) error {
+func (c CloverAuditer) Audit(event *audit.Event) error {
 	var err error
 	var data []byte
 	var fields map[string]interface{}
@@ -119,7 +119,7 @@ func (c CloverAuditer) Log(event *audit.Event) error {
 }
 
 //TODO: apply filter to query
-func (c CloverAuditer) ReadLog(option *audit.ReadLogOption) ([]audit.Event, error) {
+func (c CloverAuditer) GetEvents(option *audit.GetEventOption) ([]audit.Event, error) {
 	var err error
 	var docs []*clover.Document
 	var size int
@@ -155,8 +155,7 @@ func (c CloverAuditer) ReadLog(option *audit.ReadLogOption) ([]audit.Event, erro
 	return events, nil
 }
 
-//TODO: apply filter to query
-func (c CloverAuditer) TotalCount(option *audit.ReadLogOption) (int, error) {
+func (c CloverAuditer) GetNumberOfEvents(option *audit.GetEventOption) (int, error) {
 	var err error
 	var size int
 	var query *clover.Query

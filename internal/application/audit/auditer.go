@@ -3,30 +3,30 @@ package audit
 import "time"
 
 type Event struct {
-	// Namespace string     `json:"namespace"`
-	// TargetID  string     `json:"target_id"`
-	Action  string `json:"action"`
-	Actor   string `json:"actor"`
-	Message string `json:"message"`
+	Action    string     `json:"action"`
+	Actor     string     `json:"actor"`
+	Message   string     `json:"message"`
+	CreatedAt *time.Time `json:"created_at"`
 	// State     int        `json:"state"`
 	// ClientIP  string     `json:"client_ip"`
-	CreatedAt *time.Time `json:"created_at"`
+	// Namespace string     `json:"namespace"`
+	// TargetID  string     `json:"target_id"`
 }
 
-type ReadLogOption struct {
+type GetEventOption struct {
+	StartTime *time.Time
+	EndTime   *time.Time
+	Limit     int
 	// Namespace string
 	// TargetID  string
 	// Action    string
 	// Actor     string
 	// State     int
-	StartTime *time.Time
-	EndTime   *time.Time
-	Limit     int
-	Offset    int
+	// Offset    int
 }
 
 type Auditer interface {
-	Log(event *Event) error
-	ReadLog(option *ReadLogOption) ([]Event, error)
-	TotalCount(option *ReadLogOption) (int, error)
+	Audit(event *Event) error
+	GetEvents(option *GetEventOption) ([]Event, error)
+	GetNumberOfEvents(option *GetEventOption) (int, error)
 }

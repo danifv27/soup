@@ -84,7 +84,7 @@ func (g *GitRepo) PlainClone(location string) error {
 		Actor:   g.info.Username,
 		Message: fmt.Sprintf("cloned %s in %s", g.info.Url, location),
 	}
-	g.auditer.Log(&event)
+	g.auditer.Audit(&event)
 
 	return nil
 }
@@ -128,7 +128,7 @@ func (g *GitRepo) GetBranchNames() ([]string, error) {
 		Actor:   g.info.Username,
 		Message: fmt.Sprintf("retrieved %d branches", len(branchNames)),
 	}
-	g.auditer.Log(&event)
+	g.auditer.Audit(&event)
 
 	return branchNames, nil
 }
@@ -156,7 +156,7 @@ func (g *GitRepo) Fetch() error {
 		Actor:   g.info.Username,
 		Message: fmt.Sprintf("fetched %s", g.info.Url),
 	}
-	g.auditer.Log(&event)
+	g.auditer.Audit(&event)
 	return nil
 }
 
@@ -186,7 +186,7 @@ func (g *GitRepo) Checkout(branchName string) error {
 		Actor:   g.info.Username,
 		Message: fmt.Sprintf("checkout %s", g.info.Url),
 	}
-	g.auditer.Log(&event)
+	g.auditer.Audit(&event)
 
 	return nil
 }
@@ -228,7 +228,7 @@ func (g *GitRepo) LsRemote() error {
 		Actor:   g.info.Username,
 		Message: fmt.Sprintf("listed %d remotes from %s", len(remotes), g.info.Url),
 	}
-	g.auditer.Log(&event)
+	g.auditer.Audit(&event)
 
 	return nil
 }

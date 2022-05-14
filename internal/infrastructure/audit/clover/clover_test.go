@@ -19,7 +19,7 @@ func setupTest(t *testing.T, name string, db *CloverAuditer) (func(t *testing.T,
 	collectionExists, _ := db.HasCollection(db.collection)
 	if !collectionExists {
 		db.CreateCollection(db.collection)
-		size, _ := db.TotalCount(nil)
+		size, _ := db.GetNumberOfEvents(nil)
 		log.Printf("collection %s created, size %d", db.collection, size)
 	}
 	// Return a function to teardown the suite
@@ -150,12 +150,12 @@ func TestLog(t *testing.T) {
 				tt.beforeTest(&tt.args)
 			}
 			for i := range tt.args.events {
-				err = db.Log(&tt.args.events[i])
+				err = db.Audit(&tt.args.events[i])
 				if !errors.Is(err, tt.wantError) {
 					t.Errorf("Unexpected error; got %v, want %v", err, tt.wantError)
 				}
 			}
-			regs, err := db.TotalCount(nil)
+			regs, err := db.GetNumberOfEvents(nil)
 			if !errors.Is(err, tt.wantError) {
 				t.Errorf("Unexpected error; got %v, want %v", err, tt.wantError)
 			}
@@ -172,7 +172,7 @@ func TestReadLog(t *testing.T) {
 
 	type args struct {
 		events []audit.Event
-		option *audit.ReadLogOption
+		option *audit.GetEventOption
 	}
 
 	tests := map[string]struct {
@@ -184,7 +184,7 @@ func TestReadLog(t *testing.T) {
 		"readAllDocuments": {
 			args: args{},
 			beforeTest: func(a *args) {
-				a.option = new(audit.ReadLogOption)
+				a.option = new(audit.GetEventOption)
 				start := time.Now().Add(-time.Minute * 5).UTC()
 				a.option.StartTime = &start
 				end := time.Now().Add(time.Minute * 5).UTC()
@@ -195,7 +195,7 @@ func TestReadLog(t *testing.T) {
 						Actor:   "fraildan",
 						Message: fmt.Sprintf("refs/heads/master-%d", j),
 					})
-					err := db.Log(&a.events[j])
+					err := db.Audit(&a.events[j])
 					require.NoError(t, err) //stops test execution if fail
 				}
 				exportCollection(*db, db.collection, fmt.Sprintf("%s/%s.json", db.path, db.collection))
@@ -206,7 +206,7 @@ func TestReadLog(t *testing.T) {
 		"readLimitedDocuments": {
 			args: args{},
 			beforeTest: func(a *args) {
-				a.option = new(audit.ReadLogOption)
+				a.option = new(audit.GetEventOption)
 				start := time.Now().Add(-time.Minute * 5).UTC()
 				a.option.StartTime = &start
 				end := time.Now().Add(time.Minute * 5).UTC()
@@ -218,7 +218,7 @@ func TestReadLog(t *testing.T) {
 						Actor:   "fraildan",
 						Message: fmt.Sprintf("refs/heads/master-%d", j),
 					})
-					err := db.Log(&a.events[j])
+					err := db.Audit(&a.events[j])
 					require.NoError(t, err) //stops test execution if fail
 				}
 				exportCollection(*db, db.collection, fmt.Sprintf("%s/%s.json", db.path, db.collection))
@@ -236,7 +236,7 @@ func TestReadLog(t *testing.T) {
 			if tt.beforeTest != nil {
 				tt.beforeTest(&tt.args)
 			}
-			events, err := db.ReadLog(tt.args.option)
+			events, err := db.GetEvents(tt.args.option)
 			if err != nil {
 				t.Errorf("Can not read audit log; got %v", err)
 			}
@@ -253,7 +253,7 @@ func TestTotalCount(t *testing.T) {
 
 	type args struct {
 		events []audit.Event
-		option *audit.ReadLogOption
+		option *audit.GetEventOption
 	}
 
 	tests := map[string]struct {
@@ -265,7 +265,7 @@ func TestTotalCount(t *testing.T) {
 		"countAllDocuments": {
 			args: args{},
 			beforeTest: func(a *args) {
-				a.option = new(audit.ReadLogOption)
+				a.option = new(audit.GetEventOption)
 				start := time.Now().Add(-time.Minute * 5).UTC()
 				a.option.StartTime = &start
 				end := time.Now().Add(time.Minute * 5).UTC()
@@ -279,7 +279,7 @@ func TestTotalCount(t *testing.T) {
 						Actor:   "fraildan",
 						Message: fmt.Sprintf("refs/heads/master-%d", j),
 					})
-					err := db.Log(&a.events[j])
+					err := db.Audit(&a.events[j])
 					require.NoError(t, err) //stops test execution if fail
 				}
 				exportCollection(*db, db.collection, fmt.Sprintf("%s/%s.json", db.path, db.collection))
@@ -290,7 +290,7 @@ func TestTotalCount(t *testing.T) {
 		"countOldDocuments": {
 			args: args{},
 			beforeTest: func(a *args) {
-				a.option = new(audit.ReadLogOption)
+				a.option = new(audit.GetEventOption)
 				start := time.Now().UTC()
 				a.option.StartTime = &start
 				end := start.Add(time.Second * 15).UTC()
@@ -304,7 +304,7 @@ func TestTotalCount(t *testing.T) {
 						Actor:   "fraildan",
 						Message: fmt.Sprintf("refs/heads/master-%d", j),
 					})
-					err := db.Log(&a.events[j])
+					err := db.Audit(&a.events[j])
 					require.NoError(t, err) //stops test execution if fail
 					time.Sleep(time.Second * 3)
 				}
@@ -324,7 +324,7 @@ func TestTotalCount(t *testing.T) {
 				tt.beforeTest(&tt.args)
 			}
 
-			size, err := db.TotalCount(tt.args.option)
+			size, err := db.GetNumberOfEvents(tt.args.option)
 			if err != nil {
 				t.Errorf("Can not read audit log; got %v", err)
 			}
