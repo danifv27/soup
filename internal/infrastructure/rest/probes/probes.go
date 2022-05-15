@@ -30,7 +30,7 @@ func (c Handler) GetLiveness(w http.ResponseWriter, _ *http.Request) {
 	enc.Encode(info)
 }
 
-//GetReadiness Returns liveness status
+//GetReadiness Returns readiness status
 func (c Handler) GetReadiness(w http.ResponseWriter, _ *http.Request) {
 
 	enc := json.NewEncoder(w)

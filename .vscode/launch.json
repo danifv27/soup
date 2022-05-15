@@ -56,7 +56,8 @@
                 "sync",
                 "serve",
                 "--vcs.username=fraildan",
-                "https://github.com/danifv27/helloDeploy.git"
+                "https://github.com/danifv27/helloDeploy.git",
+                "--logging.level=debug"
 
             ],
             "showLog": true

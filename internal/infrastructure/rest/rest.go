@@ -12,6 +12,7 @@ import (
 	"github.com/danifv27/soup/internal/application"
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/infrastructure/executor"
+	"github.com/danifv27/soup/internal/infrastructure/rest/audit"
 	"github.com/danifv27/soup/internal/infrastructure/rest/bitbucket"
 	"github.com/danifv27/soup/internal/infrastructure/rest/probes"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
@@ -61,11 +62,22 @@ func (s *Server) addWebhookRoutes(secret string) {
 	}).Debug("Routes added")
 }
 
-func (s *Server) Start(address string, wg *sync.WaitGroup, enableWebhook bool, secret string) {
+func (s *Server) addAuditRoutes() {
+
+	s.router.HandleFunc(s.root+"/audit", audit.NewHandler(s.apps).GetEvents).Methods("GET")
+	s.apps.LoggerService.WithFields(logger.Fields{
+		"first": fmt.Sprintf("GET %s/audit", s.root),
+	}).Debug("Routes added")
+}
+
+func (s *Server) Start(address string, wg *sync.WaitGroup, enableWebhook bool, enableAudit bool, secret string) {
 
 	s.addProbeRoutes()
 	if enableWebhook {
 		s.addWebhookRoutes(secret)
+	}
+	if enableAudit {
+		s.addAuditRoutes()
 	}
 	s.httpServer = &http.Server{
 		Addr:    address,
