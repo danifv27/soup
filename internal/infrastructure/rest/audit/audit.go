@@ -7,20 +7,21 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/danifv27/soup/internal/application"
 	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/danifv27/soup/internal/application/logger"
 )
 
 type Handler struct {
-	apps application.Applications
+	LoggerService logger.Logger
+	Auditer       audit.Auditer
 }
 
 //NewHandler Constructor
-func NewHandler(app application.Applications) *Handler {
+func NewHandler(l logger.Logger, a audit.Auditer) *Handler {
 
 	return &Handler{
-		apps: app,
+		LoggerService: l,
+		Auditer:       a,
 	}
 }
 
@@ -47,14 +48,14 @@ func (c Handler) GetEvents(w http.ResponseWriter, r *http.Request) {
 
 	from := r.URL.Query().Get("from")
 	if from == "" {
-		c.apps.LoggerService.Info("Missing from query argument")
+		c.LoggerService.Info("Missing from query argument")
 		//https://stackoverflow.com/questions/3050518/what-http-status-response-code-should-i-use-if-the-request-is-missing-a-required
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
 	isRFC, start, err = isRFC3339V2(from)
 	if err != nil {
-		c.apps.LoggerService.WithFields(logger.Fields{
+		c.LoggerService.WithFields(logger.Fields{
 			"err":  err.Error(),
 			"from": from,
 		}).Info("Malformed query argument")
@@ -62,7 +63,7 @@ func (c Handler) GetEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !isRFC {
-		c.apps.LoggerService.WithFields(logger.Fields{
+		c.LoggerService.WithFields(logger.Fields{
 			"err":  fmt.Sprintf("%s is not RFC3339 compliant", from),
 			"from": from,
 		}).Info("Wrong RFC3339 format")
@@ -75,7 +76,7 @@ func (c Handler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	} else {
 		isRFC, end, err = isRFC3339V2(to)
 		if err != nil {
-			c.apps.LoggerService.WithFields(logger.Fields{
+			c.LoggerService.WithFields(logger.Fields{
 				"err": err.Error(),
 				"to":  to,
 			}).Info("Malformed query argument")
@@ -83,7 +84,7 @@ func (c Handler) GetEvents(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !isRFC {
-			c.apps.LoggerService.WithFields(logger.Fields{
+			c.LoggerService.WithFields(logger.Fields{
 				"err": fmt.Sprintf("%s is not RFC3339 compliant", to),
 				"to":  to,
 			}).Info("Malformed query argument")
@@ -95,7 +96,7 @@ func (c Handler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	if limit != "" {
 		option.Limit, err = strconv.Atoi(limit)
 		if err != nil {
-			c.apps.LoggerService.WithFields(logger.Fields{
+			c.LoggerService.WithFields(logger.Fields{
 				"err":   err.Error(),
 				"limit": limit,
 			}).Info("Malformed query argument")
@@ -105,13 +106,13 @@ func (c Handler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	option.StartTime = &start
 	option.EndTime = &end
 	enc := json.NewEncoder(w)
-	events, err = c.apps.Auditer.GetEvents(&option)
+	events, err = c.Auditer.GetEvents(&option)
 	if err != nil {
-		c.apps.LoggerService.WithFields(logger.Fields{
+		c.LoggerService.WithFields(logger.Fields{
 			"err": err.Error(),
 		}).Info("Can not retrieve audit events")
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	c.apps.LoggerService.Debug("Audit events retrieved")
+	c.LoggerService.Debug("Audit events retrieved")
 	enc.Encode(events)
 }
