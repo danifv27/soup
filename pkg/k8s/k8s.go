@@ -18,6 +18,7 @@ import (
 	"k8s.io/client-go/restmapper"
 )
 
+//DoSSA deploy resources using declarative configuration (Server Side Apply).
 func DoSSA(ctx context.Context, cfg *rest.Config, namespace string, yamlFile []byte) error {
 	var decUnstructured = yamlk8s.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 

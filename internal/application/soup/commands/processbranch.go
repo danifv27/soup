@@ -98,7 +98,7 @@ func (h processBranchRequestHandler) checkoutAndProcess(branchName string, clone
 			if err != nil {
 				return err
 			}
-			err = h.deploy.Deploy(k.Namespace, yml)
+			err = h.deploy.Apply(k.Namespace, yml)
 			if err != nil {
 				return err
 			}

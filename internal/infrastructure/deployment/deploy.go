@@ -13,19 +13,19 @@ import (
 	"github.com/danifv27/soup/internal/domain/soup"
 )
 
-type DeployRepo struct {
+type DeployHandler struct {
 	logger logger.Logger
 	info   *soup.DeployInfo
 }
 
-func NewDeployRepo(l logger.Logger) DeployRepo {
+func NewDeployHandler(l logger.Logger) DeployHandler {
 
-	return DeployRepo{
+	return DeployHandler{
 		logger: l,
 	}
 }
 
-func (d *DeployRepo) Init(path string, c *string) error {
+func (d *DeployHandler) Init(path string, c *string) error {
 
 	if d.info == nil {
 		d.info = new(soup.DeployInfo)
@@ -76,8 +76,8 @@ func clusterConfig(path string, context *string) (*krest.Config, error) {
 	return config, nil
 }
 
-// Ping
-func (d *DeployRepo) Ping() error {
+// Ping Check k8s cluster availability
+func (d *DeployHandler) Ping() error {
 
 	if d.info == nil {
 		return fmt.Errorf("ping: deploy repo not initialized")
@@ -95,8 +95,8 @@ func (d *DeployRepo) Ping() error {
 	return nil
 }
 
-// Deploy
-func (d *DeployRepo) Deploy(namespace string, yaml []byte) error {
+// Apply apply yaml resources configuration
+func (d *DeployHandler) Apply(namespace string, yaml []byte) error {
 
 	config, err := clusterConfig(d.info.Path, d.info.Context)
 	if err != nil {

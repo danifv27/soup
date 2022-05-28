@@ -15,16 +15,21 @@ type Git interface {
 }
 
 type Config interface {
+	// GetSoupInfo read and decrypts .soup.yaml file
 	GetSoupInfo(root string) SoupInfo
 }
 
 type Probe interface {
+	//GetLivenessInfo Returns the liveness status
 	GetLivenessInfo() (ProbeInfo, error)
+	//GetReadinessInfo Returns the readiness status
 	GetReadinessInfo() (ProbeInfo, error)
 }
 
 type Deploy interface {
 	Init(path string, context *string) error
-	Deploy(namespace string, yaml []byte) error
+	//Apply  apply yaml resources configuration
+	Apply(namespace string, yaml []byte) error
+	//Ping Check k8s cluster availability
 	Ping() error
 }
