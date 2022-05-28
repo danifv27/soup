@@ -187,11 +187,6 @@ func (c *CloverAuditer) DropCollection(col string) error {
 	return c.db.DropCollection(col)
 }
 
-func (c *CloverAuditer) CreateCollection(col string) error {
-
-	return c.db.CreateCollection(col)
-}
-
 func (c *CloverAuditer) HasCollection(col string) (bool, error) {
 
 	return c.db.HasCollection(col)
@@ -200,4 +195,18 @@ func (c *CloverAuditer) HasCollection(col string) (bool, error) {
 func (c *CloverAuditer) Close() error {
 
 	return c.db.Close()
+}
+
+func (c *CloverAuditer) UseCollection(collection string) error {
+	var err error
+
+	collectionExists, _ := c.db.HasCollection(collection)
+	if !collectionExists {
+		err = c.db.CreateCollection(collection)
+	}
+	if err == nil {
+		c.collection = collection
+	}
+
+	return err
 }

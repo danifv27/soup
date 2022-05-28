@@ -14,11 +14,8 @@ import (
 
 func setupTest(t *testing.T, name string, db *CloverAuditer) (func(t *testing.T, name string, db *CloverAuditer), error) {
 	log.Printf("setting up test: %s", name)
-	db.collection = name
-	// Check if collection already exists
-	collectionExists, _ := db.HasCollection(db.collection)
-	if !collectionExists {
-		db.CreateCollection(db.collection)
+	err := db.UseCollection(name)
+	if err != nil {
 		size, _ := db.GetNumberOfEvents(nil)
 		log.Printf("collection %s created, size %d", db.collection, size)
 	}
