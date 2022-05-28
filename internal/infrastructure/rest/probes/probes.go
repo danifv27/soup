@@ -7,18 +7,18 @@ import (
 	"github.com/danifv27/soup/internal/application"
 )
 
-type Handler struct {
+type ProbeHandler struct {
 	apps application.Applications
 }
 
-//NewHandler Constructor
-func NewHandler(app application.Applications) *Handler {
+//NewHandler implements probe interface
+func NewHandler(app application.Applications) *ProbeHandler {
 
-	return &Handler{apps: app}
+	return &ProbeHandler{apps: app}
 }
 
 //GetLiveness Returns liveness status
-func (c Handler) GetLiveness(w http.ResponseWriter, _ *http.Request) {
+func (c ProbeHandler) GetLiveness(w http.ResponseWriter, _ *http.Request) {
 
 	enc := json.NewEncoder(w)
 	info, err := c.apps.Queries.GetLivenessInfoHandler.Handle()
@@ -31,7 +31,7 @@ func (c Handler) GetLiveness(w http.ResponseWriter, _ *http.Request) {
 }
 
 //GetReadiness Returns readiness status
-func (c Handler) GetReadiness(w http.ResponseWriter, _ *http.Request) {
+func (c ProbeHandler) GetReadiness(w http.ResponseWriter, _ *http.Request) {
 
 	enc := json.NewEncoder(w)
 	info, err := c.apps.Queries.GetReadinessInfoHandler.Handle()
