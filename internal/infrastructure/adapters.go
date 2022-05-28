@@ -54,7 +54,7 @@ func NewAdapters(uri string) (Adapters, error) {
 		return Adapters{}, err
 	}
 	r := git.NewGitRepo(l, a)
-	c := config.NewSoupRepo(".")
+	c := config.NewSoupConfig(".")
 	d := deployment.NewDeployRepo(l)
 	if n, err = opsgenie.NewOpsgenieService(l); err != nil {
 		return Adapters{}, err

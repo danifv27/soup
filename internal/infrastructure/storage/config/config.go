@@ -7,20 +7,21 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type SoupRepo struct {
+type SoupConfig struct {
 	soupinfo soup.SoupInfo
 }
 
-//NewSoupRepo Constructor
-func NewSoupRepo(cloneLocation string) SoupRepo {
+//NewSoupConfig implements config interface
+func NewSoupConfig(cloneLocation string) SoupConfig {
 
 	info := new(soup.SoupInfo)
-	return SoupRepo{
+	return SoupConfig{
 		soupinfo: *info,
 	}
 }
 
-func (s SoupRepo) GetSoupInfo(root string) soup.SoupInfo {
+// GetSoupInfo read and decrypts .soup.yaml file
+func (s SoupConfig) GetSoupInfo(root string) soup.SoupInfo {
 
 	yamlFile, err := ioutil.ReadFile(root + "/.soup.yaml")
 	if err != nil {
