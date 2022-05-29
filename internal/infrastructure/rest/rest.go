@@ -64,7 +64,7 @@ func (s *Server) addWebhookRoutes(secret string) {
 
 func (s *Server) addAuditRoutes() {
 
-	s.router.HandleFunc(s.root+"/audit", audit.NewHandler(s.apps).GetEvents).Methods("GET")
+	s.router.HandleFunc(s.root+"/audit", audit.NewHandler(s.apps.LoggerService, s.apps.Auditer).GetEvents).Methods("GET")
 	s.apps.LoggerService.WithFields(logger.Fields{
 		"first": fmt.Sprintf("GET %s/audit", s.root),
 	}).Debug("Routes added")

@@ -77,6 +77,7 @@ func TestGetEvents(t *testing.T) {
 		args             args
 		beforeTest       func(a *args)
 		wantResponseCode int
+		wantNumberRegs   int
 	}{
 		"checkJsonFormat": {
 			args: args{},
@@ -100,6 +101,31 @@ func TestGetEvents(t *testing.T) {
 				}
 			},
 			wantResponseCode: http.StatusOK,
+			wantNumberRegs:   2,
+		},
+		"checkLimitParam": {
+			args: args{},
+			beforeTest: func(a *args) {
+				// a.option = new(audit.GetEventOption)
+				start := time.Now().Add(-time.Minute * 5).UTC()
+				// a.option.StartTime = &start
+				end := time.Now().Add(time.Minute * 5).UTC()
+				// a.option.EndTime = &end
+				req, err := http.NewRequest("GET", fmt.Sprintf("/audit?from=%s&to=%s&limit=6", start.Format(time.RFC3339), end.Format(time.RFC3339)), nil)
+				require.NoError(t, err) //stops test execution if fail
+				a.req = req
+				for j := 0; j < 14; j++ {
+					evt := audit.Event{
+						Action:  "repo:refs_changed",
+						Actor:   "fraildan",
+						Message: fmt.Sprintf("refs/heads/develop-%d", j),
+					}
+					err := s.h.Auditer.Audit(&evt)
+					require.NoError(t, err)
+				}
+			},
+			wantResponseCode: http.StatusOK,
+			wantNumberRegs:   6,
 		},
 	}
 
@@ -122,6 +148,9 @@ func TestGetEvents(t *testing.T) {
 			var m []map[string]string
 			err = json.Unmarshal(got, &m)
 			require.NoError(t, err)
+			if len(m) != tt.wantNumberRegs {
+				t.Errorf("Wrong number of audit registers; got %v, want %v", len(m), tt.wantNumberRegs)
+			}
 		})
 	}
 }

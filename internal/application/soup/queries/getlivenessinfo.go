@@ -25,7 +25,7 @@ type getLivenessInfoHandler struct {
 	probesrepo soup.Probe
 }
 
-//NewGetCragRequestHandler Handler Constructor
+//NewGetLivenessInfoHandler Handler Constructor
 func NewGetLivenessInfoHandler(repo soup.Probe) GetLivenessInfoHandler {
 
 	return getLivenessInfoHandler{probesrepo: repo}

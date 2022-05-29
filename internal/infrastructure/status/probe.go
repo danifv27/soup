@@ -29,7 +29,7 @@ func (m ProbeRepo) GetLivenessInfo() (soup.ProbeInfo, error) {
 	return *i, nil
 }
 
-//GetReadinessInfo Returns the liveness status
+//GetReadinessInfo Returns the readiness status
 func (m ProbeRepo) GetReadinessInfo() (soup.ProbeInfo, error) {
 
 	i := new(soup.ProbeInfo)
