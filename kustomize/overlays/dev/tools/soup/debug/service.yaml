@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: soup
+spec:
+  ports:
+    - protocol: TCP
+      port: 40000
+      targetPort: 40000
+      name: debug

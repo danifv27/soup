@@ -4,6 +4,10 @@ kind: Kustomization
 resources:
   - ../../../../../bases/tools/soup
 
+patchesStrategicMerge:
+  - command.yaml
+  - service.yaml
+
 transformers:
   - instanceLabels.yaml
   - prefixSuffixTransformer.yaml
