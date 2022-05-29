@@ -1,0 +1,13 @@
+---
+apiVersion: builtin
+kind: PrefixSuffixTransformer
+metadata:
+  name: soup-debug
+prefix: sre-
+suffix: -debug
+fieldSpecs:
+  - kind: Deployment
+    path: metadata/name
+  - kind: Service
+    path: metadata/name
+  

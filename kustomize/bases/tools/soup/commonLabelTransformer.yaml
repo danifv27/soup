@@ -1,0 +1,16 @@
+---
+apiVersion: builtin
+kind: LabelTransformer
+metadata:
+  name: soup
+labels:
+  app.kubernetes.io/part-of: sre
+  app.kubernetes.io/component: tools
+  app.kubernetes.io/name: soup
+  app.kubernetes.io/managed-by: kustomize
+fieldSpecs:
+- path: metadata/labels
+  create: true
+- kind: Deployment
+  path: spec/template/metadata/labels
+  create: true

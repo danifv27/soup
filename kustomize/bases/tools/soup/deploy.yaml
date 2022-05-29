@@ -1,0 +1,111 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: soup
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: sre
+      app.kubernetes.io/component: tools
+      app.kubernetes.io/name: soup
+  replicas: 2
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - soup
+              topologyKey: "kubernetes.io/hostname"
+            weight: 100
+      containers:
+        - name: soup
+          image: registry.tools.3stripes.net/ebtpc-commons/soup
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /actuator/readiness
+              port: actuator
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 30
+            successThreshold: 1
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /actuator/liveness
+              port: actuator
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "768Mi"
+            limits:
+              cpu: "1000m"
+              memory: "768Mi"
+          ports:
+            - containerPort: 8080
+              name: rest
+            - containerPort: 9081
+              name: actuator
+          env:
+            - name: SOUP_SYNC_ACTUATOR_PORT
+              value: "9081"
+            - name: SOUP_SYNC_ACTUATOR_ROOT
+              value: "actuator"
+            - name: SOUP_K8S_CONTEXT
+            - name: SOUP_K8S_PATH
+            - name: SOUP_ALERT_TEAMS
+              value: "sre"
+            - name: SOUP_ALERT_TAGS
+              value: "sre,soup"
+            - name: SOUP_ALERT_PRIORITY
+              value: "P4"
+            - name: SOUP_ALERT_APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: alert
+                  key: ALERT_APIKEY
+            - name: SOUP_ALERT_URL
+            - name: SOUP_AUDIT_PATH
+              value: "audit:clover?path=/tmp/soup-audit&collection=soup"
+            - name: SOUP_AUDIT_ENABLE_ENDPOINT
+              value: "true"
+            - name: SOUP_LOGGING_FORMAT
+              value: "logger:stdout?json=false"
+            - name: SOUP_LOGGING_LEVEL
+              value: "info"
+            - name: SOUP_VCS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: vcs
+                  key: VCS_USERNAME
+            - name: SOUP_VCS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vcs
+                  key: VCS_TOKEN
+            - name: SOUP_VCS_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: vcs
+                  key: VCS_WEBHOOK_SECRET     
+      imagePullSecrets:
+        - name: harbor-credentials
+
