@@ -6,7 +6,6 @@ resources:
 
 patchesStrategicMerge:
   - command.yaml
-  - service.yaml
 
 transformers:
   - instanceLabels.yaml
@@ -15,4 +14,4 @@ transformers:
 
 images:
   - name: registry.tools.3stripes.net/ebtpc-commons/soup
-    newTag: 1.10.0-DBG
+    newTag: 1.10.0

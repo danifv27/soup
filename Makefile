@@ -157,13 +157,13 @@ package: ## Create a docker image of the project
 
 .PHONY: tag
 tag: ## Tag image created by package with latest, git commit and version
-	@echo "Tagging image: ${VERSION} $(GIT_COMMIT)"
+	@echo "Tagging image: ${VERSION}${VERSION_SUFFIX} $(GIT_COMMIT)"
 	$(Q)docker tag $(IMAGE_NAME_LC):local $(IMAGE_NAME_LC):$(GIT_SHORT_COMMIT)
 	$(Q)docker tag $(IMAGE_NAME_LC):local $(IMAGE_NAME_LC):${VERSION}${VERSION_SUFFIX}
 
 .PHONY: push
 push: tag ## Push tagged images to docker registry
-	@echo "Pushing docker image to registry: ${VERSION} $(GIT_SHORT_COMMIT)"
+	@echo "Pushing docker image to registry: ${VERSION}${VERSION_SUFFIX} $(GIT_SHORT_COMMIT)"
 #	$(Q)(echo $(BASE64_PASSWORD) | base64 --decode | docker login -u danifv27 --password-stdin $(DOCKER_REGISTRY))
 	$(Q)docker push $(IMAGE_NAME_LC):$(GIT_SHORT_COMMIT)
 	$(Q)docker push $(IMAGE_NAME_LC):${VERSION}${VERSION_SUFFIX}

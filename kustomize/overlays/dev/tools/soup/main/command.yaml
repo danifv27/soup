@@ -1,0 +1,15 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: soup
+spec:
+  template:
+    spec:
+      containers:
+        - name: soup
+          command: /app/bin/soup
+          args:
+            - sync
+            - serve
+            - https://tools.adidas-group.com/bitbucket/scm/rcs/origo-deployments.git

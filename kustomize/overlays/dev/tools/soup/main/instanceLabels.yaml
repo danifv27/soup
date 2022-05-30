@@ -1,0 +1,26 @@
+---
+apiVersion: builtin
+kind: LabelTransformer
+metadata:
+  name: soup
+labels:
+  app.kubernetes.io/instance: main
+fieldSpecs:
+- kind: Deployment
+  path: metadata/labels
+  create: true
+- kind: Deployment
+  path: spec/selector/matchLabels
+  create: true
+- kind: Deployment
+  path: spec/template/metadata/labels
+  create: true
+- kind: Service  
+  path: metadata/labels
+  create: true
+- kind: Service
+  path: spec/selector
+  create: true
+- kind: Secret
+  path: metadata/labels
+  create: true
