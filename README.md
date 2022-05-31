@@ -43,18 +43,4 @@ kubectl apply -f install.yml
 ### Deployment Configuration file
 Soup reads a file named `.soup.yaml` on the repository branches in order to know what to deploy and in which namespace. An example can be found in [docs/examples/.soup.yaml](https://github.com/caldito/soup/blob/main/docs/examples/.soup.yaml).
 
-### Arguments
-The command line arguments should be in this form:
-```
--arg=value
-```
-Available arguments:
-* repo: the url of the repo. This must be specified
-* interval: the sync interval in seconds. By default is set to 120s.
 
-## Contributing
-Pull requests are welcomed and encouraged. For questions, feature requests and bug reports, please open an issue.
-
-There is also a [TODO](https://github.com/caldito/soup/blob/main/TODO) file containing work planned to do.
-
-An internal diagram which may be useful for contributors can be found in [docs/images/internals.png](https://github.com/caldito/soup/blob/main/docs/images/internals.png).

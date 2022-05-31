@@ -53,7 +53,7 @@ func (s *Server) addProbeRoutes() {
 	}).Debug("Routes added")
 }
 
-func (s *Server) addWebhookRoutes(secret string) {
+func (s *Server) addBitbucketWebhookRoutes(secret string) {
 
 	s.router.HandleFunc(s.root+"/webhook", bitbucket.NewHandler(s.apps, secret).WebhookEvent).Methods("POST")
 	// s.router.HandleFunc(s.root+"/webhook", bitbucket.NewHandler(s.apps).WebhookEvent).Methods("GET")
@@ -70,11 +70,11 @@ func (s *Server) addAuditRoutes() {
 	}).Debug("Routes added")
 }
 
-func (s *Server) Start(address string, wg *sync.WaitGroup, enableWebhook bool, enableAudit bool, secret string) {
+func (s *Server) Start(address string, wg *sync.WaitGroup, enableBitbucket bool, enableAudit bool, bitbucketSecret string) {
 
 	s.addProbeRoutes()
-	if enableWebhook {
-		s.addWebhookRoutes(secret)
+	if enableBitbucket {
+		s.addBitbucketWebhookRoutes(bitbucketSecret)
 	}
 	if enableAudit {
 		s.addAuditRoutes()

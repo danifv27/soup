@@ -13,11 +13,6 @@ import (
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 )
 
-type K8s struct {
-	Path    string     `help:"path to the kubeconfig file to use for requests or host url" env:"SOUP_K8S_PATH"`
-	Context contextStr `help:"the name of the kubeconfig context to use" env:"SOUP_K8S_CONTEXT"`
-}
-
 type VCS struct {
 	Username  string `help:"username" env:"SOUP_VCS_USERNAME"`
 	Withtoken string `help:"personal access token" env:"SOUP_VCS_TOKEN"`
@@ -35,11 +30,11 @@ type ServeSubcmd struct {
 type SyncCmd struct {
 	Actuator Actuator    `embed:"" prefix:"actuator."`
 	K8s      K8s         `embed:"" prefix:"k8s."`
-	Repo     RepoSubcmd  `cmd:"" help:"One-shot reconcialition"`
-	Serve    ServeSubcmd `cmd:"" help:"Serve reconcialiation webhook"`
+	Repo     RepoSubcmd  `cmd:"" help:"One-shot reconciliation"`
+	Serve    ServeSubcmd `cmd:"" help:"Serve reconciliation bitbucket webhook"`
 }
 
-func initialize(cli *CLI, path string, vcs VCS, f *WasSetted) (application.Applications, error) {
+func initializeSyncCmd(cli *CLI, path string, vcs VCS, f *WasSetted) (application.Applications, error) {
 	var apps application.Applications
 
 	infra, err := infrastructure.NewAdapters(cli.Audit.DbPath)
@@ -86,7 +81,7 @@ func (cmd *RepoSubcmd) Run(cli *CLI, f *WasSetted) error {
 	var err error
 	var apps application.Applications
 
-	if apps, err = initialize(cli, cmd.Path, cmd.VCS, f); err != nil {
+	if apps, err = initializeSyncCmd(cli, cmd.Path, cmd.VCS, f); err != nil {
 		return err
 	}
 
@@ -127,7 +122,7 @@ func (cmd *ServeSubcmd) Run(cli *CLI, f *WasSetted) error {
 	var err error
 	var apps application.Applications
 
-	if apps, err = initialize(cli, cmd.Path, cmd.VCS, f); err != nil {
+	if apps, err = initializeSyncCmd(cli, cmd.Path, cmd.VCS, f); err != nil {
 		return err
 	}
 

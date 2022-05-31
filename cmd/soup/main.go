@@ -22,6 +22,11 @@ type Actuator struct {
 	Root string `help:"actuator root" default:"/probe" env:"SOUP_SYNC_ACTUATOR_ROOT" optional:"" hidden:""`
 }
 
+type K8s struct {
+	Path    string     `help:"path to the kubeconfig file to use for requests or host url" env:"SOUP_K8S_PATH"`
+	Context contextStr `help:"the name of the kubeconfig context to use" env:"SOUP_K8S_CONTEXT"`
+}
+
 type Alert struct {
 	URL      string   `help:"the URL for the Alert API" env:"SOUP_ALERT_URL"`
 	Apikey   string   `help:"token used for authenticating API requests" env:"SOUP_ALERT_APIKEY"`
