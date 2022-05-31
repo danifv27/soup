@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"github.com/alecthomas/kong"
 )
@@ -41,6 +42,7 @@ type CLI struct {
 	Alert   Alert      `embed:"" prefix:"alert."`
 	Version VersionCmd `cmd:"" help:"Show the version information"`
 	Sync    SyncCmd    `cmd:"" help:"Sync kubernetes with VCS contents"`
+	Diff    DiffCmd    `cmd:"" help:"Kubernetes resource diff"`
 }
 
 func main() {
@@ -50,6 +52,7 @@ func main() {
 		Logging: Log{},
 		Version: VersionCmd{},
 		Sync:    SyncCmd{},
+		Diff:    DiffCmd{},
 	}
 
 	setted := WasSetted{
@@ -67,6 +70,7 @@ func main() {
 		kong.ConfigureHelp(kong.HelpOptions{
 			Tree: true,
 		}),
+		kong.TypeMapper(reflect.TypeOf([]Resource{}), Resource{}),
 	)
 	err = ctx.Run(&cli)
 	ctx.FatalIfErrorf(err)
