@@ -61,6 +61,12 @@ func main() {
 	}
 
 	bin := filepath.Base(os.Args[0])
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	exPath := filepath.Dir(ex)
+	exBin := filepath.Base(ex)
 	//config file has precedence over envars
 	ctx := kong.Parse(&cli,
 		kong.Bind(&setted),
@@ -72,6 +78,7 @@ func main() {
 			Tree: true,
 		}),
 		kong.TypeMapper(reflect.TypeOf([]Resource{}), Resource{}),
+		kong.Configuration(kong.JSON, fmt.Sprintf("/etc/%s.json", bin), fmt.Sprintf("~/.%s.json", bin), fmt.Sprintf("%s/.%s.json", exPath, exBin)),
 	)
 	err = ctx.Run(&cli)
 	ctx.FatalIfErrorf(err)
