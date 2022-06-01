@@ -34,6 +34,7 @@ type Alert struct {
 	Priority string   `enum:"P1,P2,P3,P4" help:"The priority of alert" default:"P3" env:"SOUP_ALERT_PRIORITY" hidden:""`
 	Tags     []string `help:"list of labels attached to the alert" env:"SOUP_ALERT_TAGS" hidden:""`
 	Teams    []string `help:"list of teams for setting responders" env:"SOUP_ALERT_TEAMS" hidden:""`
+	Enable   bool     `help:"Enable alerting" env:"SOUP_ALERT_ENABLE" hidden:"" default:"false"`
 }
 
 type CLI struct {

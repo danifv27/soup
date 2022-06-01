@@ -26,6 +26,7 @@ import (
 	"github.com/danifv27/soup/internal/infrastructure/deployment"
 	"github.com/danifv27/soup/internal/infrastructure/git"
 	"github.com/danifv27/soup/internal/infrastructure/logger/logrus"
+	"github.com/danifv27/soup/internal/infrastructure/notification/console"
 	"github.com/danifv27/soup/internal/infrastructure/notification/opsgenie"
 	"github.com/danifv27/soup/internal/infrastructure/status"
 	"github.com/danifv27/soup/internal/infrastructure/storage/config"
@@ -44,22 +45,25 @@ type Adapters struct {
 	ProbeRepository     soup.Probe
 }
 
-func NewAdapters(uri string) (Adapters, error) {
+func NewAdapters(auditerURI string, enableNotifier bool) (Adapters, error) {
 	var err error
-	var n *opsgenie.OpsgenieService
+	var n notification.Notifier
 	var a audit.Auditer
 
 	l := logrus.NewLoggerService()
-	if a, err = clover.NewCloverAuditer(uri); err != nil {
+	if a, err = clover.NewCloverAuditer(auditerURI); err != nil {
 		return Adapters{}, err
 	}
 	r := git.NewGitRepo(l, a)
 	c := config.NewSoupConfig(".")
 	d := deployment.NewDeployHandler(l)
-	if n, err = opsgenie.NewOpsgenieService(l); err != nil {
-		return Adapters{}, err
+	if enableNotifier {
+		if n, err = opsgenie.NewOpsgenieService(l); err != nil {
+			return Adapters{}, err
+		}
+	} else {
+		n = console.NewNotificationService()
 	}
-
 	return Adapters{
 		LoggerService:       l,
 		NotificationService: n,

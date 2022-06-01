@@ -51,7 +51,7 @@ type DiffCmd struct {
 func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error) {
 	var apps application.Applications
 
-	infra, err := infrastructure.NewAdapters(cli.Audit.DbPath)
+	infra, err := infrastructure.NewAdapters(cli.Audit.DbPath, cli.Alert.Enable)
 	if err != nil {
 		return application.Applications{}, err
 	}
