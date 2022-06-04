@@ -15,7 +15,7 @@ type Log struct {
 }
 
 type Auditer struct {
-	DbPath string `help:"Path to audit database" env:"SOUP_AUDIT_PATH" hidden:"" default:"audit:clover?path=/tmp/soup-audit&collection=audit"`
+	URL    string `help:"Path to audit database" env:"SOUP_AUDIT_PATH" hidden:"" default:"audit:clover?path=/tmp/soup-audit&collection=audit"`
 	Enable bool   `help:"Enable audit endpoint" env:"SOUP_AUDIT_ENABLE_ENDPOINT" hidden:"" default:"true"`
 }
 type Actuator struct {
@@ -70,7 +70,6 @@ func main() {
 	//config file has precedence over envars
 	ctx := kong.Parse(&cli,
 		kong.Bind(&setted),
-		kong.Configuration(kong.JSON, fmt.Sprintf("/etc/%s.json", bin), fmt.Sprintf("~/.%s.json", bin), fmt.Sprintf("./%s.json", bin)),
 		kong.Name(bin),
 		kong.Description("GitOps tool for Kubernetes"),
 		kong.UsageOnError(),
