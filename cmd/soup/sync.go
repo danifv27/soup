@@ -19,12 +19,12 @@ type VCS struct {
 	Secret    string `help:"Webhook secret" env:"SOUP_VCS_WEBHOOK_SECRET"`
 }
 type RepoSubcmd struct {
-	Path string `arg:"" help:"repo to sync"`
+	Path string `arg:"" help:"repo to sync" prefix:"vcs."`
 	VCS  VCS    `embed:"" prefix:"vcs."`
 }
 
 type ServeSubcmd struct {
-	Path string `arg:"" help:"repo to sync"`
+	Path string `arg:"" help:"repo to sync" prefix:"vcs."`
 	VCS  VCS    `embed:"" prefix:"vcs."`
 }
 type SyncCmd struct {

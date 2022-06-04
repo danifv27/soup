@@ -12,7 +12,7 @@ import (
 )
 
 type VersionCmd struct {
-	Format string `short:"f" help:"Format the output (pretty|json)." enum:"pretty,json" default:"pretty"`
+	Format string `prefix:"version." short:"f" help:"Format the output (pretty|json)." enum:"pretty,json" default:"pretty"`
 }
 
 func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, error) {
@@ -65,7 +65,6 @@ func (cmd *VersionCmd) Run(cli *CLI, f *WasSetted) error {
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {
-		var err error
 
 		req := commands.PrintVersionRequest{
 			Format: cli.Version.Format,
