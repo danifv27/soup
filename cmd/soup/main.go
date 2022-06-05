@@ -40,7 +40,6 @@ type Alert struct {
 type CLI struct {
 	Logging Log        `embed:"" prefix:"logging."`
 	Audit   Auditer    `embed:"" prefix:"audit."`
-	Alert   Alert      `embed:"" prefix:"alert."`
 	Version VersionCmd `cmd:"" help:"Show the version information"`
 	Sync    SyncCmd    `cmd:"" help:"Sync kubernetes with VCS contents"`
 	Diff    DiffCmd    `cmd:"" help:"Kubernetes resource diff"`

@@ -44,8 +44,9 @@ func (r Resource) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
 
 type DiffCmd struct {
 	// Actuator Actuator `embed:"" prefix:"actuator."`
-	K8s       K8s        `embed:"" prefix:"k8s."`
-	Resources []Resource `prefix:"diff." default:"v1/services,apps/v1/deployments,apps/v1/statefulsets"`
+	Alert     Alert      `embed:"" prefix:"diff.alert."`
+	K8s       K8s        `embed:"" prefix:"diff.k8s."`
+	Resources []Resource `prefix:"diff." default:"v1/services,apps/v1/deployments" help:"Resources to be watched"`
 }
 
 func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error) {
@@ -97,9 +98,9 @@ func (cmd *DiffCmd) Run(cli *CLI, f *WasSetted) error {
 			n := notification.Notification{
 				Message:     fmt.Sprintf("error deploying %s", cli.Sync.Repo.Path),
 				Description: err.Error(),
-				Priority:    cli.Alert.Priority,
-				Tags:        append([]string(nil), cli.Alert.Tags...),
-				Teams:       append([]string(nil), cli.Alert.Teams...),
+				Priority:    cli.Diff.Alert.Priority,
+				Tags:        append([]string(nil), cli.Diff.Alert.Tags...),
+				Teams:       append([]string(nil), cli.Diff.Alert.Teams...),
 			}
 			apps.Notifier.Notify(n)
 		}

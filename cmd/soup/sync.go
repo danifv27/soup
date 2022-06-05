@@ -28,8 +28,9 @@ type ServeSubcmd struct {
 	VCS  VCS    `embed:"" prefix:"vcs."`
 }
 type SyncCmd struct {
-	Actuator Actuator    `embed:"" prefix:"actuator."`
-	K8s      K8s         `embed:"" prefix:"k8s."`
+	Alert    Alert       `embed:"" prefix:"sync.alert."`
+	Actuator Actuator    `embed:"" prefix:"sync.actuator."`
+	K8s      K8s         `embed:"" prefix:"sync.k8s."`
 	Repo     RepoSubcmd  `cmd:"" help:"One-shot reconciliation"`
 	Serve    ServeSubcmd `cmd:"" help:"Serve reconciliation bitbucket webhook"`
 }
@@ -89,9 +90,9 @@ func (cmd *RepoSubcmd) Run(cli *CLI, f *WasSetted) error {
 			n := notification.Notification{
 				Message:     fmt.Sprintf("error deploying %s", cli.Sync.Repo.Path),
 				Description: err.Error(),
-				Priority:    cli.Alert.Priority,
-				Tags:        append([]string(nil), cli.Alert.Tags...),
-				Teams:       append([]string(nil), cli.Alert.Teams...),
+				Priority:    cli.Sync.Alert.Priority,
+				Tags:        append([]string(nil), cli.Sync.Alert.Tags...),
+				Teams:       append([]string(nil), cli.Sync.Alert.Teams...),
 			}
 			apps.Notifier.Notify(n)
 		}
