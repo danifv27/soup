@@ -18,6 +18,8 @@
 package infrastructure
 
 import (
+	"net/url"
+
 	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/application/notification"
@@ -45,8 +47,19 @@ type Adapters struct {
 	ProbeRepository     soup.Probe
 }
 
-func NewAdapters(auditerURI string, enableNotifier bool) (Adapters, error) {
+func getSchemaFromURI(uri string) (string, error) {
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return "", err
+	}
+
+	return u.Scheme, nil
+}
+
+func NewAdapters(auditerURI string, notifierURI string) (Adapters, error) {
 	var err error
+	var schema string
 	var n notification.Notifier
 	var a audit.Auditer
 
@@ -57,13 +70,19 @@ func NewAdapters(auditerURI string, enableNotifier bool) (Adapters, error) {
 	r := git.NewGitRepo(l, a)
 	c := config.NewSoupConfig(".")
 	d := deployment.NewDeployHandler(l)
-	if enableNotifier {
-		if n, err = opsgenie.NewOpsgenieService(l); err != nil {
+
+	if schema, err = getSchemaFromURI(notifierURI); err != nil {
+		return Adapters{}, err
+	}
+	switch {
+	case schema == "opsgenie":
+		if n, err = opsgenie.NewOpsgenieService(notifierURI, l); err != nil {
 			return Adapters{}, err
 		}
-	} else {
+	default:
 		n = console.NewNotificationService()
 	}
+
 	return Adapters{
 		LoggerService:       l,
 		NotificationService: n,

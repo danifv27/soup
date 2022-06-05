@@ -51,11 +51,7 @@ type DiffCmd struct {
 func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error) {
 	var apps application.Applications
 
-	infra, err := infrastructure.NewAdapters(cli.Audit.URL, cli.Alert.Enable)
-	if err != nil {
-		return application.Applications{}, err
-	}
-
+	infra, err := infrastructure.NewAdapters(cli.Audit.URL, cli.Diff.Alert.URL)
 	if err != nil {
 		return application.Applications{}, err
 	}
