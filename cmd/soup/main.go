@@ -15,7 +15,7 @@ type Log struct {
 }
 
 type Auditer struct {
-	URL    string `help:"Path to audit database" env:"SOUP_AUDIT_PATH" hidden:"" default:"audit:clover?path=/tmp/soup-audit&collection=audit"`
+	URI    string `help:"Auditer URI" env:"SOUP_AUDIT_URI" hidden:"" default:"audit:clover?path=/tmp/soup-audit&collection=audit"`
 	Enable bool   `help:"Enable audit endpoint" env:"SOUP_AUDIT_ENABLE_ENDPOINT" hidden:"" default:"true"`
 }
 type Actuator struct {
@@ -29,12 +29,11 @@ type K8s struct {
 }
 
 type Alert struct {
-	URL      string   `help:"the URL for the Alert API" env:"SOUP_ALERT_URL"`
+	URI      string   `help:"the URI associaed to the alert notifier" env:"SOUP_ALERT_URI"`
 	Apikey   string   `help:"token used for authenticating API requests" env:"SOUP_ALERT_APIKEY"`
 	Priority string   `enum:"P1,P2,P3,P4" help:"The priority of alert" default:"P3" env:"SOUP_ALERT_PRIORITY" hidden:""`
 	Tags     []string `help:"list of labels attached to the alert" env:"SOUP_ALERT_TAGS" hidden:""`
 	Teams    []string `help:"list of teams for setting responders" env:"SOUP_ALERT_TEAMS" hidden:""`
-	Enable   bool     `help:"Enable alerting" env:"SOUP_ALERT_ENABLE" hidden:"" default:"false"`
 }
 
 type CLI struct {

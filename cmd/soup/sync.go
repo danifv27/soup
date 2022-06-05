@@ -38,7 +38,7 @@ type SyncCmd struct {
 func initializeSyncCmd(cli *CLI, path string, vcs VCS, f *WasSetted) (application.Applications, error) {
 	var apps application.Applications
 
-	infra, err := infrastructure.NewAdapters(cli.Audit.URL, cli.Sync.Alert.URL)
+	infra, err := infrastructure.NewAdapters(cli.Audit.URI, cli.Sync.Alert.URI)
 	if err != nil {
 		return application.Applications{}, err
 	}

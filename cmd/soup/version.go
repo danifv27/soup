@@ -18,7 +18,7 @@ type VersionCmd struct {
 func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, error) {
 	var apps application.Applications
 
-	infra, err := infrastructure.NewAdapters(cli.Audit.URL, "notifier:console") //Version command does not need to talk with opsgenie
+	infra, err := infrastructure.NewAdapters(cli.Audit.URI, "notifier:console") //Version command does not need to talk with opsgenie
 	if err != nil {
 		return application.Applications{}, err
 	}
