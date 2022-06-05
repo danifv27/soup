@@ -43,7 +43,7 @@ func (r Resource) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
 }
 
 type DiffCmd struct {
-	// Actuator Actuator `embed:"" prefix:"actuator."`
+	Actuator  Actuator   `embed:"" prefix:"diff.actuator."`
 	Alert     Alert      `embed:"" prefix:"diff.alert."`
 	K8s       K8s        `embed:"" prefix:"diff.k8s."`
 	Resources []Resource `prefix:"diff." default:"v1/services,apps/v1/deployments" help:"Resources to be watched"`
@@ -114,8 +114,8 @@ func (cmd *DiffCmd) Run(cli *CLI, f *WasSetted) error {
 
 	ports := infrastructure.NewPorts(apps, &h)
 	wg := &sync.WaitGroup{}
-	ports.Actuators.SetActuatorRoot(cli.Sync.Actuator.Root)
-	ports.Actuators.Start(cli.Sync.Actuator.Port, wg, false, cli.Audit.Enable, "")
+	ports.Actuators.SetActuatorRoot(cli.Diff.Actuator.Root)
+	ports.Actuators.Start(cli.Diff.Actuator.Address, wg, false, cli.Audit.Enable, "")
 	ports.MainLoop.Exec(wg)
 	wg.Wait()
 

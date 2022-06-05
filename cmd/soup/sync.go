@@ -107,7 +107,7 @@ func (cmd *RepoSubcmd) Run(cli *CLI, f *WasSetted) error {
 	ports := infrastructure.NewPorts(apps, &h)
 	wg := &sync.WaitGroup{}
 	ports.Actuators.SetActuatorRoot(cli.Sync.Actuator.Root)
-	ports.Actuators.Start(cli.Sync.Actuator.Port, wg, false, cli.Audit.Enable, cmd.VCS.Secret)
+	ports.Actuators.Start(cli.Sync.Actuator.Address, wg, false, cli.Audit.Enable, cmd.VCS.Secret)
 	ports.MainLoop.Exec(wg)
 	wg.Wait()
 
@@ -125,7 +125,7 @@ func (cmd *ServeSubcmd) Run(cli *CLI, f *WasSetted) error {
 	ports := infrastructure.NewPorts(apps, nil)
 	wg := &sync.WaitGroup{}
 	ports.Actuators.SetActuatorRoot(cli.Sync.Actuator.Root)
-	ports.Actuators.Start(cli.Sync.Actuator.Port, wg, true, cli.Audit.Enable, cmd.VCS.Secret)
+	ports.Actuators.Start(cli.Sync.Actuator.Address, wg, true, cli.Audit.Enable, cmd.VCS.Secret)
 	wg.Wait()
 
 	return nil

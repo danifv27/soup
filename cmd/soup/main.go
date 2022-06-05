@@ -19,8 +19,8 @@ type Auditer struct {
 	Enable bool   `help:"Enable audit endpoint" env:"SOUP_AUDIT_ENABLE_ENDPOINT" hidden:"" default:"true"`
 }
 type Actuator struct {
-	Port string `help:"actuator port" default:":8081" env:"SOUP_SYNC_ACTUATOR_PORT" optional:""`
-	Root string `help:"actuator root" default:"/probe" env:"SOUP_SYNC_ACTUATOR_ROOT" optional:"" hidden:""`
+	Address string `help:"actuator port" default:":8081" env:"SOUP_SYNC_ACTUATOR_PORT" optional:""`
+	Root    string `help:"actuator root" default:"/probe" env:"SOUP_SYNC_ACTUATOR_ROOT" optional:"" hidden:""`
 }
 
 type K8s struct {
@@ -29,8 +29,7 @@ type K8s struct {
 }
 
 type Alert struct {
-	URI      string   `help:"the URI associaed to the alert notifier" env:"SOUP_ALERT_URI"`
-	Apikey   string   `help:"token used for authenticating API requests" env:"SOUP_ALERT_APIKEY"`
+	URI      string   `help:"the URI associaed to the alert notifier" env:"SOUP_ALERT_URI" default:"notifier:opsgenie?host=api.opsgenie.com&apikey=123456-1234-4321-7890-098765432109"`
 	Priority string   `enum:"P1,P2,P3,P4" help:"The priority of alert" default:"P3" env:"SOUP_ALERT_PRIORITY" hidden:""`
 	Tags     []string `help:"list of labels attached to the alert" env:"SOUP_ALERT_TAGS" hidden:""`
 	Teams    []string `help:"list of teams for setting responders" env:"SOUP_ALERT_TEAMS" hidden:""`
