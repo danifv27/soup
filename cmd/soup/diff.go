@@ -56,7 +56,6 @@ func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error)
 		return application.Applications{}, err
 	}
 
-	err = infra.NotificationService.Init(cli.Alert.URL, cli.Alert.Apikey)
 	if err != nil {
 		return application.Applications{}, err
 	}

@@ -23,10 +23,6 @@ func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, err
 		return application.Applications{}, err
 	}
 
-	err = infra.NotificationService.Init(cli.Alert.URL, cli.Alert.Apikey)
-	if err != nil {
-		return application.Applications{}, err
-	}
 
 	if f.contextWasSet {
 		c := string(cli.Sync.K8s.Context)

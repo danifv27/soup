@@ -16,6 +16,5 @@ type Notification struct {
 
 // Service sends Notification
 type Notifier interface {
-	Init(url string, token string) error
 	Notify(notification Notification) error
 }

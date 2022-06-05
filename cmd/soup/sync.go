@@ -48,11 +48,6 @@ func initializeSyncCmd(cli *CLI, path string, vcs VCS, f *WasSetted) (applicatio
 		return application.Applications{}, err
 	}
 
-	err = infra.NotificationService.Init(cli.Alert.URL, cli.Alert.Apikey)
-	if err != nil {
-		return application.Applications{}, err
-	}
-
 	if f.contextWasSet {
 		c := string(cli.Sync.K8s.Context)
 		err = infra.DeployRepository.Init(cli.Sync.K8s.Path, &c)
