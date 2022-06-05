@@ -2,6 +2,8 @@ package opsgenie
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/application/notification"
@@ -15,23 +17,52 @@ type OpsgenieService struct {
 	config client.Config
 }
 
+func parseURI(uri string) (string, string, error) {
+	var host string
+	var apikey string
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return "", "", err
+	}
+	if u.Scheme != "notifier" {
+		return "", "", fmt.Errorf("ParseURI: invalid scheme %s", u.Scheme)
+	}
+
+	switch u.Opaque {
+	case "opsgenie":
+		host = u.Query().Get("host")
+		if host == "" {
+			return "", "", fmt.Errorf("ParseURI: host not defined")
+		}
+		apikey = u.Query().Get("apikey")
+		if apikey == "" {
+			return "", "", fmt.Errorf("ParseURI: apikey not defined")
+		}
+	default:
+		return "", "", fmt.Errorf("ParseURI: unsupported notifier implementation %q", u.Opaque)
+	}
+
+	return host, apikey, nil
+}
+
 // NewOpsgenieService constructor for NotificationService
-func NewOpsgenieService(l logger.Logger) (*OpsgenieService, error) {
+func NewOpsgenieService(uri string, l logger.Logger) (*OpsgenieService, error) {
+	var err error
+	var host, apikey string
+
+	if host, apikey, err = parseURI(uri); err != nil {
+		return nil, fmt.Errorf("NewOpsgenieService: %w", err)
+	}
 
 	svc := new(OpsgenieService)
 	svc.logger = l
-
-	return svc, nil
-}
-
-func (svc *OpsgenieService) Init(url string, token string) error {
-
 	svc.config = client.Config{
-		ApiKey:         token,
-		OpsGenieAPIURL: client.ApiUrl(url),
+		ApiKey:         apikey,
+		OpsGenieAPIURL: client.ApiUrl(host),
 	}
 
-	return nil
+	return svc, nil
 }
 
 func generateResponders(responderNames []string, responderType alert.ResponderType) []alert.Responder {
