@@ -3,14 +3,55 @@
         "level": "debug",
         "format": "logger:stdout?json=false"
     },
-    "path": "/Users/fraildan/.kube/config",
-    "context": "aws-sre-dev",
-    "actuator": {
-        "port": ":8081",
-        "root": "/actuator"
+    "audit": {
+        "url": "audit:clover?path=/tmp/soup-audit&collection=audit",
+        "enable": true
     },
-    "alert": {
-        "url": "api.opsgenie.com",
-        "teams": ["vortex-sre", "lbr-sre", "origo-ops"]
-    } 
+    "version": {
+        "format": "json"
+    },
+    "diff": {
+        "k8s": {
+            "path": "k8s_path",
+            "context": "k8s_context"
+        },
+        "alert": {
+            "uri": "notifier:opsgenie?host=api.opsgenie.com&apikey=123456-1234-4321-7890-098765432109",
+            "teams": ["team1", "team2", "team3"],
+            "priority": "P4",
+            "tags": ["tag1", "tag2", "tag3"],
+            "enable": false
+        },
+        "resources": "resource1,resource2,resource3,resource4",
+        "actuator": {
+            "address": ":9081",
+            "root": "/actuators"
+        }
+    },
+    "sync": {
+        "k8s": {
+            "path": "k8s_path",
+            "context": "k8s_context"
+        },
+        "alert": {
+            "uri": "notifier:opsgenie?host=api.opsgenie.com&apikey=123456-1234-4321-7890-098765432109",
+            "teams": ["teamA", "teamB"],
+            "priority": "P3",
+            "tags": ["tagA", "tagB", "tagC"],
+            "enable": false
+        },
+        "resources": "resource1,resource2,resource3,resource4",
+        "actuator": {
+            "address": ":9081",
+            "root": "/actuators"
+        },
+
+        "serve": {
+            "vcs": {
+                "username": "user-serve",
+                "withtoken": "token-serve",
+                "secret": "secret-serve"
+            }
+        }
+    }
 }

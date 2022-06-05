@@ -16,16 +16,16 @@ import (
 type VCS struct {
 	Username  string `help:"username" env:"SOUP_VCS_USERNAME"`
 	Withtoken string `help:"personal access token" env:"SOUP_VCS_TOKEN"`
-	Secret    string `help:"Webhook secret" env:"SOUP_VCS_WEBHOOK_SECRET"`
+	Secret    string `help:"webhook secret" env:"SOUP_VCS_WEBHOOK_SECRET"`
 }
 type RepoSubcmd struct {
-	Path string `arg:"" help:"repo to sync" prefix:"vcs."`
-	VCS  VCS    `embed:"" prefix:"vcs."`
+	Path string `arg:"" help:"repo to sync"`
+	VCS  VCS    `embed:"" prefix:"sync.repo.vcs."`
 }
 
 type ServeSubcmd struct {
-	Path string `arg:"" help:"repo to sync" prefix:"vcs."`
-	VCS  VCS    `embed:"" prefix:"vcs."`
+	Path string `arg:"" help:"repo to sync"`
+	VCS  VCS    `embed:"" prefix:"sync.serve.vcs."`
 }
 type SyncCmd struct {
 	Alert    Alert       `embed:"" prefix:"sync.alert."`

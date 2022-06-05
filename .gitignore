@@ -4,3 +4,4 @@ cmd/soup/__debug_bin.json
 cmd/soup/__debug_bin
 vendor/
 .vscode/*.log
+cmd/soup/.__debug_bin.json
