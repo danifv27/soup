@@ -23,17 +23,6 @@ func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, err
 		return application.Applications{}, err
 	}
 
-
-	if f.contextWasSet {
-		c := string(cli.Sync.K8s.Context)
-		err = infra.DeployRepository.Init(cli.Sync.K8s.Path, &c)
-	} else {
-		err = infra.DeployRepository.Init(cli.Sync.K8s.Path, nil)
-	}
-	if err != nil {
-		return application.Applications{}, err
-	}
-
 	apps = application.NewApplications(infra.LoggerService,
 		infra.NotificationService,
 		infra.AuditService,
