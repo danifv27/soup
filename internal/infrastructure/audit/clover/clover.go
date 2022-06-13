@@ -16,7 +16,7 @@ type CloverAuditer struct {
 	path       string
 }
 
-func ParseURI(uri string) (string, string, error) {
+func parseURI(uri string) (string, string, error) {
 	var path string
 	var col string
 
@@ -50,7 +50,7 @@ func NewCloverAuditer(uri string) (CloverAuditer, error) {
 	var err error
 	var dbPath, col string
 
-	if dbPath, col, err = ParseURI(uri); err != nil {
+	if dbPath, col, err = parseURI(uri); err != nil {
 		return CloverAuditer{}, fmt.Errorf("NewCloverAuditer: %w", err)
 	}
 	if d, err = clover.Open(dbPath); err != nil {

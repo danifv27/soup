@@ -59,7 +59,7 @@ type GitInfo struct {
 	Token    string
 }
 
-type DeployInfo struct {
+type K8sInfo struct {
 	Path    string
 	Context *string
 }

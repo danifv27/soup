@@ -4,35 +4,72 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	yamlk8s "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/restmapper"
+	krest "k8s.io/client-go/rest"
+	kcmd "k8s.io/client-go/tools/clientcmd"
 )
+
+// isValidUrl tests a string to determine if it is a well-structured url or not.
+func isValidUrl(toTest string) bool {
+	_, err := url.ParseRequestURI(toTest)
+	if err != nil {
+		return false
+	}
+
+	u, err := url.Parse(toTest)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
+	return true
+}
+
+//NewClusterConfig creates the rest configuration. If neither masterUrl or kubeconfigPath are passed in path argument we fallback to inClusterConfig
+func NewClusterConfig(path string, context *string) (*krest.Config, error) {
+	var config *krest.Config
+	var err error
+
+	if isValidUrl(path) {
+		// masterUrl detectected
+		config, err = kcmd.BuildConfigFromFlags(path, "")
+	} else {
+		if context != nil {
+			// kubeconfig plus context
+			config, err = kcmd.BuildConfigFromFlags("", path)
+		} else {
+			// inClusterConfig
+			rules := kcmd.NewDefaultClientConfigLoadingRules()
+			rules.DefaultClientConfig = &kcmd.DefaultClientConfig
+			overrides := &kcmd.ConfigOverrides{ClusterDefaults: kcmd.ClusterDefaults}
+			overrides.CurrentContext = *context
+			config, err = kcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides).ClientConfig()
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return config, nil
+}
 
 //DoSSA deploy resources using declarative configuration (Server Side Apply).
 func DoSSA(ctx context.Context, cfg *rest.Config, namespace string, yamlFile []byte) error {
 	var decUnstructured = yamlk8s.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
+	var client *Client
+	var err error
 
 	// 1. Prepare a RESTMapper to find GVR
-	// DiscoveryClient queries API server about the resources
-	dc, err := discovery.NewDiscoveryClientForConfig(cfg)
-	if err != nil {
-		return err
-	}
-	mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
-
 	// 2. Prepare the dynamic client
-	dyn, err := dynamic.NewForConfig(cfg)
-	if err != nil {
+	if client, err = NewClient(cfg); err != nil {
 		return err
 	}
 
@@ -44,7 +81,7 @@ func DoSSA(ctx context.Context, cfg *rest.Config, namespace string, yamlFile []b
 	}
 
 	// 4. Find the corresponding GVR (available in *meta.RESTMapping) for GVK
-	mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	mapping, err := client.DiscoveryMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 	if err != nil {
 		return err
 	}
@@ -54,10 +91,10 @@ func DoSSA(ctx context.Context, cfg *rest.Config, namespace string, yamlFile []b
 	if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
 		// namespaced resources should specify the namespace
 		obj.SetNamespace(namespace)
-		dr = dyn.Resource(mapping.Resource).Namespace(obj.GetNamespace())
+		dr = client.DynamicClient.Resource(mapping.Resource).Namespace(obj.GetNamespace())
 	} else {
 		// for cluster-wide resources
-		dr = dyn.Resource(mapping.Resource)
+		dr = client.DynamicClient.Resource(mapping.Resource)
 	}
 
 	// 6. Marshal object into JSON
@@ -72,6 +109,7 @@ func DoSSA(ctx context.Context, cfg *rest.Config, namespace string, yamlFile []b
 	_, err = dr.Patch(ctx, obj.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{
 		FieldManager: "soup-controller",
 	})
+
 	return err
 }
 

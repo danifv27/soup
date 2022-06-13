@@ -81,7 +81,7 @@ func TestParseURI(t *testing.T) {
 			if tt.beforeTest != nil {
 				tt.beforeTest(&tt.args)
 			}
-			p, c, err = ParseURI(tt.args.uri)
+			p, c, err = parseURI(tt.args.uri)
 			if !errors.Is(err, tt.wantError) {
 				t.Errorf("Unexpected error; got %v, want %v", err, tt.wantError)
 			}
