@@ -15,10 +15,10 @@ func NewNotificationService() *NotificationService {
 	return &NotificationService{}
 }
 
-func (svc *NotificationService) Init(url string, token string) error {
+// func (svc *NotificationService) Init(url string, token string) error {
 
-	return nil
-}
+// 	return nil
+// }
 
 // Notify prints out the notifications in console
 func (svc *NotificationService) Notify(notification notification.Notification) error {

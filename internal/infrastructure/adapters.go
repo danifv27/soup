@@ -48,18 +48,23 @@ type Adapters struct {
 }
 
 func getSchemaFromURI(uri string) (string, error) {
+func getOpaqueFromURI(uri string) (string, error) {
 
 	u, err := url.Parse(uri)
 	if err != nil {
 		return "", err
 	}
 
-	return u.Scheme, nil
+	if u.Scheme == "audit" || u.Scheme == "notifier" || u.Scheme == "informer" {
+		return u.Opaque, nil
+	}
+
+	return "", fmt.Errorf("getOpaqueFromURI: '%s' unsupported schema", u.Scheme)
 }
 
 func NewAdapters(auditerURI string, notifierURI string) (Adapters, error) {
 	var err error
-	var schema string
+	var opaque string
 	var n notification.Notifier
 	var a audit.Auditer
 
@@ -71,16 +76,21 @@ func NewAdapters(auditerURI string, notifierURI string) (Adapters, error) {
 	c := config.NewSoupConfig(".")
 	d := deployment.NewDeployHandler(l)
 
-	if schema, err = getSchemaFromURI(notifierURI); err != nil {
+	if opaque, err = getOpaqueFromURI(notifierURI); err != nil {
 		return Adapters{}, err
 	}
 	switch {
-	case schema == "opsgenie":
+	case opaque == "opsgenie":
 		if n, err = opsgenie.NewOpsgenieService(notifierURI, l); err != nil {
 			return Adapters{}, err
 		}
-	default:
+	case opaque == "noop":
+		n = notifNoop.NewNotifier()
+	case opaque == "console":
 		n = console.NewNotificationService()
+	default:
+		return Adapters{}, fmt.Errorf("NewAdapters: unsopported notifier schema %s", opaque)
+	}
 	}
 
 	return Adapters{
