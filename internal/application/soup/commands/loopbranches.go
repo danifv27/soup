@@ -48,22 +48,21 @@ func (h loopBranchesRequestHandler) Handle(command LoopBranchesRequest) error {
 		os.RemoveAll(path)
 	}(cloneLocation)
 	if err = h.svc.PlainClone(cloneLocation); err != nil {
-		return err
+		return fmt.Errorf("Handle: %w", err)
 	}
 	// Get branch names
 	if branchNames, err = h.svc.GetBranchNames(); err != nil {
-		return err
+		return fmt.Errorf("Handle: %w", err)
 	}
 	// Fetch branches
 	if err = h.svc.Fetch(); err != nil {
-		return err
+		return fmt.Errorf("Handle: %w", err)
 	}
 
 	// Checkout to the branches and do GitOps stuff
 	for _, branchName := range branchNames {
-
 		if err = h.checkoutAndProcess(branchName, cloneLocation); err != nil {
-			return err
+			return fmt.Errorf("Handle: %w", err)
 		}
 	}
 

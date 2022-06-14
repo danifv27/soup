@@ -89,10 +89,10 @@ func NewAdapters(gArgs SVCArgs, auditerURI string, notifierURI string, wArgs Wat
 
 	l := logrus.NewLoggerService()
 	if a, err = clover.NewCloverAuditer(auditerURI); err != nil {
-		return Adapters{}, err
+		return Adapters{}, fmt.Errorf("NewAdapters: %w", err)
 	}
 	if opaque, err = getOpaqueFromURI(gArgs.URI); err != nil {
-		return Adapters{}, err
+		return Adapters{}, fmt.Errorf("NewAdapters: %w", err)
 	}
 	switch {
 	case opaque == "git":
@@ -112,12 +112,12 @@ func NewAdapters(gArgs SVCArgs, auditerURI string, notifierURI string, wArgs Wat
 	d := deployment.NewDeployHandler(l)
 
 	if opaque, err = getOpaqueFromURI(notifierURI); err != nil {
-		return Adapters{}, err
+		return Adapters{}, fmt.Errorf("NewAdapters: %w", err)
 	}
 	switch {
 	case opaque == "opsgenie":
 		if n, err = opsgenie.NewOpsgenieService(notifierURI, l); err != nil {
-			return Adapters{}, err
+			return Adapters{}, fmt.Errorf("NewAdapters: %w", err)
 		}
 	case opaque == "noop":
 		n = notifNoop.NewNotifier()
@@ -128,12 +128,12 @@ func NewAdapters(gArgs SVCArgs, auditerURI string, notifierURI string, wArgs Wat
 	}
 
 	if opaque, err = getOpaqueFromURI(wArgs.URI); err != nil {
-		return Adapters{}, err
+		return Adapters{}, fmt.Errorf("NewAdapters: %w", err)
 	}
 	switch {
 	case opaque == "k8s":
 		if w, err = k8s.NewWatcher(wArgs.URI, wArgs.Resources, wArgs.Namespaces, l, a); err != nil {
-			return Adapters{}, err
+			return Adapters{}, fmt.Errorf("NewAdapters: %w", err)
 		}
 	case opaque == "noop":
 		w, _ = noop.NewWatcher()

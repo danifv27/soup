@@ -19,7 +19,7 @@ type LoggerService struct {
 func (l LoggerService) SetLevel(level string) error {
 	lvl, err := logrus.ParseLevel(level)
 	if err != nil {
-		return err
+		return fmt.Errorf("SetLevel: %w", err)
 	}
 
 	l.entry.Logger.Level = lvl
@@ -30,7 +30,7 @@ func (l LoggerService) SetLevel(level string) error {
 func (l LoggerService) SetFormat(format string) error {
 	u, err := url.Parse(format)
 	if err != nil {
-		return err
+		return fmt.Errorf("SetFormat: %w", err)
 	}
 	if u.Scheme != "logger" {
 		return fmt.Errorf("invalid scheme %s", u.Scheme)

@@ -22,7 +22,7 @@ func parseURI(uri string) (string, string, error) {
 
 	u, err := url.Parse(uri)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("parseURI: %w", err)
 	}
 	if u.Scheme != "audit" {
 		return "", "", fmt.Errorf("ParseURI: invalid scheme %s", u.Scheme)
@@ -103,16 +103,16 @@ func (c CloverAuditer) Audit(event *audit.Event) error {
 	event.CreatedAt = &nowUTC
 
 	if data, err = json.Marshal(event); err != nil {
-		return fmt.Errorf("Log: %w", err)
+		return fmt.Errorf("Audit: %w", err)
 	}
 	if err = json.Unmarshal(data, &fields); err != nil {
-		return fmt.Errorf("Log: %w", err)
+		return fmt.Errorf("Audit: %w", err)
 	}
 	// insert a new document inside the collection
 	doc := clover.NewDocumentOf(fields)
 	// InsertOne returns the id of the inserted document
 	if _, err = c.db.InsertOne(c.collection, doc); err != nil {
-		return fmt.Errorf("Log: %w", err)
+		return fmt.Errorf("Audit: %w", err)
 	}
 
 	return nil
@@ -127,13 +127,13 @@ func (c CloverAuditer) GetEvents(option *audit.GetEventOption) ([]audit.Event, e
 	var query *clover.Query
 
 	if query, err = getQuery(c, option); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetEvents: %w", err)
 	}
 	if criteria, err = getCriteria(option); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetEvents: %w", err)
 	}
 	if size, err = query.Where(criteria).Count(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetEvents: %w", err)
 	}
 	//Find all documents between start and end time
 	sorting := clover.SortOption{
@@ -141,13 +141,13 @@ func (c CloverAuditer) GetEvents(option *audit.GetEventOption) ([]audit.Event, e
 		Direction: 1,
 	}
 	if docs, err = query.Sort(sorting).Where(criteria).FindAll(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetEvents: %w", err)
 	}
 	events := make([]audit.Event, 0, size)
 	for j := 0; j < size; j++ {
 		evt := &audit.Event{}
 		if err = docs[j].Unmarshal(&evt); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("GetEvents: %w", err)
 		}
 		events = append(events, *evt)
 	}
@@ -165,13 +165,13 @@ func (c CloverAuditer) GetNumberOfEvents(option *audit.GetEventOption) (int, err
 		return c.db.Query(c.collection).Count()
 	}
 	if query, err = getQuery(c, option); err != nil {
-		return -1, err
+		return -1, fmt.Errorf("GetNumberOfEvents: %w", err)
 	}
 	if criteria, err = getCriteria(option); err != nil {
-		return -1, err
+		return -1, fmt.Errorf("GetNumberOfEvents: %w", err)
 	}
 	if size, err = query.Where(criteria).Count(); err != nil {
-		return -1, err
+		return -1, fmt.Errorf("GetNumberOfEvents: %w", err)
 	}
 
 	return size, nil

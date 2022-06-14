@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"sync"
 	"syscall"
@@ -27,7 +28,7 @@ func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, err
 	}
 	infra, err := infrastructure.NewAdapters(gArgs, cli.Audit.URI, "notifier:console", wArgs) //Version command does not need to talk with opsgenie
 	if err != nil {
-		return application.Applications{}, err
+		return application.Applications{}, fmt.Errorf("initializeVersionCmd: %w", err)
 	}
 
 	apps = application.NewApplications(infra.LoggerService,
@@ -50,7 +51,7 @@ func (cmd *VersionCmd) Run(cli *CLI, f *WasSetted) error {
 	var apps application.Applications
 
 	if apps, err = initializeVersionCmd(cli, f); err != nil {
-		return err
+		return fmt.Errorf("Run: %w", err)
 	}
 
 	apps.LoggerService.SetLevel(cli.Logging.Level)

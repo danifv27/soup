@@ -48,13 +48,13 @@ func initializeSyncCmd(cli *CLI, path string, vcs VCS, f *WasSetted) (applicatio
 	}
 	infra, err := infrastructure.NewAdapters(gArgs, cli.Audit.URI, cli.Sync.Alert.URI, wArgs)
 	if err != nil {
-		return application.Applications{}, err
+		return application.Applications{}, fmt.Errorf("initializeSyncCmd: %w", err)
 	}
 	// err = infra.GitRepository.Init(path,
 	// 	vcs.Username,
 	// 	vcs.Withtoken)
 	// if err != nil {
-	// 	return application.Applications{}, err
+	// 	return application.Applications{}, fmt.Errorf("initializeSyncCmd: %w", err)
 	// }
 
 	if f.contextWasSet {
@@ -64,7 +64,7 @@ func initializeSyncCmd(cli *CLI, path string, vcs VCS, f *WasSetted) (applicatio
 		err = infra.DeployRepository.Init(cli.Sync.K8s.Path, nil)
 	}
 	if err != nil {
-		return application.Applications{}, err
+		return application.Applications{}, fmt.Errorf("initializeSyncCmd: %w", err)
 	}
 
 	apps = application.NewApplications(infra.LoggerService,
@@ -87,7 +87,7 @@ func (cmd *RepoSubcmd) Run(cli *CLI, f *WasSetted) error {
 	var apps application.Applications
 
 	if apps, err = initializeSyncCmd(cli, cmd.Path, cmd.VCS, f); err != nil {
-		return err
+		return fmt.Errorf("Run: %w", err)
 	}
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
@@ -128,7 +128,7 @@ func (cmd *ServeSubcmd) Run(cli *CLI, f *WasSetted) error {
 	var apps application.Applications
 
 	if apps, err = initializeSyncCmd(cli, cmd.Path, cmd.VCS, f); err != nil {
-		return err
+		return fmt.Errorf("Run: %w", err)
 	}
 
 	ports := infrastructure.NewPorts(apps, nil)

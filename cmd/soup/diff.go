@@ -82,7 +82,7 @@ func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error)
 
 	infra, err := infrastructure.NewAdapters(gArgs, cli.Audit.URI, cli.Diff.Alert.URI, wArgs)
 	if err != nil {
-		return application.Applications{}, err
+		return application.Applications{}, fmt.Errorf("initializeDiffCmd: %w", err)
 	}
 
 	if f.contextWasSet {
@@ -92,7 +92,7 @@ func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error)
 		err = infra.DeployRepository.Init(cli.Sync.K8s.Path, nil)
 	}
 	if err != nil {
-		return application.Applications{}, err
+		return application.Applications{}, fmt.Errorf("initializeDiffCmd: %w", err)
 	}
 
 	apps = application.NewApplications(infra.LoggerService,
@@ -115,7 +115,7 @@ func (cmd *DiffCmd) Run(cli *CLI, f *WasSetted) error {
 	var apps application.Applications
 
 	if apps, err = initializeDiffCmd(cli, f); err != nil {
-		return err
+		return fmt.Errorf("Run: %w", err)
 	}
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)

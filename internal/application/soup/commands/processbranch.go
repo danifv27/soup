@@ -91,16 +91,16 @@ func (h processBranchRequestHandler) checkoutAndProcess(branchName string, clone
 		}
 		m, err := kst.Run(fSys, fmt.Sprintf("%s/%s", info.Root, k.Overlay))
 		if err != nil {
-			return err
+			return fmt.Errorf("checkoutAndProcess: %w", err)
 		}
 		for _, r := range m.Resources() {
 			yml, err = r.AsYAML()
 			if err != nil {
-				return err
+				return fmt.Errorf("checkoutAndProcess: %w", err)
 			}
 			err = h.deploy.Apply(k.Namespace, yml)
 			if err != nil {
-				return err
+				return fmt.Errorf("checkoutAndProcess: %w", err)
 			}
 			h.logger.WithFields(logger.Fields{
 				"branch":    branchName,

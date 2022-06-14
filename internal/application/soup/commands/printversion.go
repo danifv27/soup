@@ -38,11 +38,11 @@ func (h printVersionRequestHandler) Handle(command PrintVersionRequest) error {
 	var notif notification.Notification
 
 	if info, err = h.repo.GetVersionInfo(); err != nil {
-		return err
+		return fmt.Errorf("Handle: %w", err)
 	}
 	if command.Format == "json" {
 		if out, err = json.MarshalIndent(info, "", "    "); err != nil {
-			return err
+			return fmt.Errorf("Handle: %w", err)
 		}
 		notif = notification.Notification{
 			Message: string(out),

@@ -42,7 +42,7 @@ func (h getVersionInfoHandler) Handle() (*GetVersionInfoResult, error) {
 	var err error
 
 	if info, err = h.versionrepo.GetVersionInfo(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Handle: %w", err)
 	}
 	result := &GetVersionInfoResult{
 		Version:     fmt.Sprint(info.Version),
