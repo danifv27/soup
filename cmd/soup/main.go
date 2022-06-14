@@ -73,7 +73,7 @@ func main() {
 		kong.ConfigureHelp(kong.HelpOptions{
 			Tree: true,
 		}),
-		kong.TypeMapper(reflect.TypeOf([]Resource{}), Resource{}),
+		kong.TypeMapper(reflect.TypeOf([]K8sResource{}), K8sResource{}),
 		kong.Configuration(kong.JSON, fmt.Sprintf("/etc/%s.json", bin), fmt.Sprintf("~/.%s.json", bin), fmt.Sprintf("%s/.%s.json", exPath, exBin)),
 	)
 	err = ctx.Run(&cli)

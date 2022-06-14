@@ -18,7 +18,14 @@ type VersionCmd struct {
 func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, error) {
 	var apps application.Applications
 
-	infra, err := infrastructure.NewAdapters(cli.Audit.URI, "notifier:console") //Version command does not need to talk with opsgenie
+	wArgs := infrastructure.WatcherArgs{
+		URI: "informer:noop",
+	}
+
+	gArgs := infrastructure.SVCArgs{
+		URI: "svc:noop",
+	}
+	infra, err := infrastructure.NewAdapters(gArgs, cli.Audit.URI, "notifier:console", wArgs) //Version command does not need to talk with opsgenie
 	if err != nil {
 		return application.Applications{}, err
 	}
@@ -30,7 +37,8 @@ func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, err
 		infra.GitRepository,
 		infra.DeployRepository,
 		infra.SoupRepository,
-		infra.ProbeRepository)
+		infra.ProbeRepository,
+		infra.InformerService)
 	apps.LoggerService.SetLevel(cli.Logging.Level)
 	apps.LoggerService.SetFormat(cli.Logging.Format)
 

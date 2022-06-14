@@ -39,16 +39,23 @@ type SyncCmd struct {
 func initializeSyncCmd(cli *CLI, path string, vcs VCS, f *WasSetted) (application.Applications, error) {
 	var apps application.Applications
 
-	infra, err := infrastructure.NewAdapters(cli.Audit.URI, cli.Sync.Alert.URI)
+	wArgs := infrastructure.WatcherArgs{
+		URI: "informer:noop",
+	}
+	gArgs := infrastructure.SVCArgs{
+		URI:     vcs.URI,
+		Address: path,
+	}
+	infra, err := infrastructure.NewAdapters(gArgs, cli.Audit.URI, cli.Sync.Alert.URI, wArgs)
 	if err != nil {
 		return application.Applications{}, err
 	}
-	err = infra.GitRepository.Init(path,
-		vcs.Username,
-		vcs.Withtoken)
-	if err != nil {
-		return application.Applications{}, err
-	}
+	// err = infra.GitRepository.Init(path,
+	// 	vcs.Username,
+	// 	vcs.Withtoken)
+	// if err != nil {
+	// 	return application.Applications{}, err
+	// }
 
 	if f.contextWasSet {
 		c := string(cli.Sync.K8s.Context)
@@ -67,7 +74,8 @@ func initializeSyncCmd(cli *CLI, path string, vcs VCS, f *WasSetted) (applicatio
 		infra.GitRepository,
 		infra.DeployRepository,
 		infra.SoupRepository,
-		infra.ProbeRepository)
+		infra.ProbeRepository,
+		infra.InformerService)
 	apps.LoggerService.SetLevel(cli.Logging.Level)
 	apps.LoggerService.SetFormat(cli.Logging.Format)
 

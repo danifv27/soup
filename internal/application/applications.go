@@ -17,6 +17,7 @@ import (
 	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/application/soup/commands"
 	"github.com/danifv27/soup/internal/application/soup/queries"
+	"github.com/danifv27/soup/internal/application/watcher"
 	"github.com/danifv27/soup/internal/domain/soup"
 )
 
@@ -39,6 +40,7 @@ type Applications struct {
 	LoggerService logger.Logger
 	Notifier      notification.Notifier
 	Auditer       audit.Auditer
+	Informer      watcher.Informer
 	Queries       Queries
 	Commands      Commands
 }
@@ -51,12 +53,14 @@ func NewApplications(logger logger.Logger,
 	git soup.Git,
 	deploy soup.Deploy,
 	config soup.Config,
-	probes soup.Probe) Applications {
+	probes soup.Probe,
+	informer watcher.Informer) Applications {
 
 	return Applications{
 		LoggerService: logger,
 		Notifier:      notifier,
 		Auditer:       auditer,
+		Informer:      informer,
 		Queries: Queries{
 			GetVersionInfoHandler:   queries.NewGetVersionInfoHandler(version),
 			GetLivenessInfoHandler:  queries.NewGetLivenessInfoHandler(probes),

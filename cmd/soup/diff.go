@@ -9,19 +9,25 @@ import (
 	"syscall"
 
 	"github.com/alecthomas/kong"
-
 	"github.com/danifv27/soup/internal/application"
 	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/application/soup/commands"
 	"github.com/danifv27/soup/internal/infrastructure"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
+	"github.com/danifv27/soup/internal/infrastructure/watcher/kubernetes"
 )
 
-type Resource struct {
+type Informer struct {
+	URI        string        `help:"K8s Informer URI" env:"SOUP_INFORMER_URI" hidden:"" default:"informer:k8s?context=aws-dummy&path=kubeconfig-path&resync=45s&mode=diff"`
+	Resources  []K8sResource `default:"v1/services,apps/v1/deployments" env:"SOUP_INFORMER_RESOURCES" help:"Resources to be watched"`
+	Namespaces []string      `default:"all" env:"SOUP_INFORMER_NAMESPACES" help:"Namespace to watch"`
+}
+
+type K8sResource struct {
 	Kind string
 }
 
-func (r Resource) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
+func (r K8sResource) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
 	var value string
 	err := ctx.Scan.PopValueInto("value", &value)
 	if err != nil {
@@ -29,7 +35,7 @@ func (r Resource) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
 	}
 	resources := strings.Split(value, ",")
 	for _, resource := range resources {
-		res := Resource{}
+		res := K8sResource{}
 		res.Kind = resource
 		target.Set(reflect.Append(target, reflect.ValueOf(res)))
 	}
@@ -43,16 +49,38 @@ func (r Resource) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
 }
 
 type DiffCmd struct {
-	Actuator  Actuator   `embed:"" prefix:"diff.actuator."`
-	Alert     Alert      `embed:"" prefix:"diff.alert."`
-	K8s       K8s        `embed:"" prefix:"diff.k8s."`
-	Resources []Resource `prefix:"diff." default:"v1/services,apps/v1/deployments" help:"Resources to be watched"`
+	Actuator Actuator `embed:"" prefix:"diff.actuator."`
+	Alert    Alert    `embed:"" prefix:"diff.alert."`
+	K8s      K8s      `embed:"" prefix:"diff.k8s."`
+	Informer Informer `embed:"" prefix:"diff.informer."`
+}
+
+func copyResources(resources []K8sResource) []kubernetes.Resource {
+	var res []kubernetes.Resource
+
+	for _, r := range resources {
+		resource := kubernetes.Resource(r)
+		res = append(res, resource)
+	}
+
+	return res
 }
 
 func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error) {
 	var apps application.Applications
 
-	infra, err := infrastructure.NewAdapters(cli.Audit.URI, cli.Diff.Alert.URI)
+	wArgs := infrastructure.WatcherArgs{
+		URI: cli.Diff.Informer.URI,
+		//Copy one struct to another where structs have same members and different types
+		Resources:  copyResources(cli.Diff.Informer.Resources),
+		Namespaces: cli.Diff.Informer.Namespaces,
+	}
+
+	gArgs := infrastructure.SVCArgs{
+		URI: "svc:noop",
+	}
+
+	infra, err := infrastructure.NewAdapters(gArgs, cli.Audit.URI, cli.Diff.Alert.URI, wArgs)
 	if err != nil {
 		return application.Applications{}, err
 	}
@@ -74,7 +102,8 @@ func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error)
 		infra.GitRepository,
 		infra.DeployRepository,
 		infra.SoupRepository,
-		infra.ProbeRepository)
+		infra.ProbeRepository,
+		infra.InformerService)
 	apps.LoggerService.SetLevel(cli.Logging.Level)
 	apps.LoggerService.SetFormat(cli.Logging.Format)
 
