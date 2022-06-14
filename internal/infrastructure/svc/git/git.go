@@ -23,34 +23,82 @@ type GitRepo struct {
 	worktree *gogit.Worktree
 }
 
-func NewGitRepo(l logger.Logger, audit audit.Auditer) GitRepo {
-	return GitRepo{
-		logger:  l,
-		auditer: audit,
+func parseURI(uri string) (string, string, error) {
+	var user, token, secret string
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return "", "", err
 	}
+	if u.Scheme != "svc" {
+		return "", "", fmt.Errorf("parseURI: invalid scheme %s", u.Scheme)
+	}
+
+	switch u.Opaque {
+	case "git":
+		user = u.Query().Get("username")
+		if user == "" {
+			user = "dummy"
+		}
+		token = u.Query().Get("token")
+		if token == "" {
+			return "", "", fmt.Errorf("parseURI: token not defined")
+		}
+		secret = u.Query().Get("secret")
+		if secret == "" {
+			return "", "", fmt.Errorf("parseURI: secret not defined")
+		}
+	default:
+		return "", "", fmt.Errorf("parseURI: unsupported svc implementation %q", u.Opaque)
+	}
+
+	return user, token, nil
 }
 
-func (g *GitRepo) Init(address string, username string, token string) error {
+func NewGitRepo(uri string, address string, l logger.Logger, audit audit.Auditer) (GitRepo, error) {
 	var u *url.URL
 	var err error
 
+	g := GitRepo{
+		logger:  l,
+		auditer: audit,
+	}
 	if g.info == nil {
 		g.info = new(soup.GitInfo)
 	}
-	if username == "" {
-		g.info.Username = "dummy"
-	} else {
-		g.info.Username = username
+	if g.info.Username, g.info.Token, err = parseURI(uri); err != nil {
+		return GitRepo{}, fmt.Errorf("NewGitRepo: %w", err)
 	}
-	g.info.Token = token
+
 	if u, err = url.Parse(address); err != nil {
-		return err
+		return GitRepo{}, fmt.Errorf("NewGitRepo: %w", err)
 	}
-	//u.User = url.UserPassword(g.info.Username, g.info.Token)
 	g.info.Url = u.String()
 
-	return nil
+	return g, nil
 }
+
+// func (g *GitRepo) Init(address string, username string, token string) error {
+// 	var u *url.URL
+// 	var err error
+
+// 	if g.info == nil {
+// 		g.info = new(soup.GitInfo)
+// 	}
+// 	if username == "" {
+// 		g.info.Username = "dummy"
+// 	} else {
+// 		g.info.Username = username
+// 	}
+// 	g.info.Token = token
+// 	if u, err = url.Parse(address); err != nil {
+// 		return err
+// 	}
+// 	//u.User = url.UserPassword(g.info.Username, g.info.Token)
+// 	g.info.Url = u.String()
+
+// 	return nil
+// }
 
 func (g *GitRepo) PlainClone(location string) error {
 	var err error

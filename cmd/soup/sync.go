@@ -14,9 +14,10 @@ import (
 )
 
 type VCS struct {
-	Username  string `help:"username" env:"SOUP_VCS_USERNAME"`
-	Withtoken string `help:"personal access token" env:"SOUP_VCS_TOKEN"`
-	Secret    string `help:"webhook secret" env:"SOUP_VCS_WEBHOOK_SECRET"`
+	URI string `help:"version control URI" env:"SOUP_VCS_URI" hidden:"" default:"svc:git?username=dummy&token=dummy-personal-access-token"`
+	// Username  string `help:"username" env:"SOUP_VCS_USERNAME"`
+	// Withtoken string `help:"personal access token" env:"SOUP_VCS_TOKEN"`
+	Secret string `help:"webhook secret" env:"SOUP_VCS_WEBHOOK_SECRET"`
 }
 type RepoSubcmd struct {
 	Path string `arg:"" help:"repo to sync"`
