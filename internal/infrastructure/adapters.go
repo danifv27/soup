@@ -72,7 +72,7 @@ func getOpaqueFromURI(uri string) (string, error) {
 		return "", err
 	}
 
-	if u.Scheme == "audit" || u.Scheme == "notifier" || u.Scheme == "informer" {
+	if u.Scheme == "audit" || u.Scheme == "notifier" || u.Scheme == "informer" || u.Scheme == "svc" {
 		return u.Opaque, nil
 	}
 
