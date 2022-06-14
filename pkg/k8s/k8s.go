@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/azure" // auth for AKS clusters
 	"k8s.io/client-go/rest"
 	krest "k8s.io/client-go/rest"
 	kcmd "k8s.io/client-go/tools/clientcmd"
