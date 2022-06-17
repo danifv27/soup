@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/danifv27/soup/internal/application"
+	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/application/soup/commands"
 	"github.com/danifv27/soup/internal/infrastructure"
@@ -110,7 +111,13 @@ func (cmd *RepoSubcmd) Run(cli *CLI, f *WasSetted) error {
 	})
 	h.SetShutdownFunc(func(s os.Signal) error {
 
-		return nil
+		event := audit.Event{
+			Action:  "SyncShutdown",
+			Actor:   "system",
+			Message: "diff command shutdown",
+		}
+
+		return apps.Auditer.Audit(&event)
 	})
 
 	ports := infrastructure.NewPorts(apps, &h)

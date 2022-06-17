@@ -10,8 +10,7 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/danifv27/soup/internal/application"
-	"github.com/danifv27/soup/internal/application/notification"
-	"github.com/danifv27/soup/internal/application/soup/commands"
+	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/danifv27/soup/internal/infrastructure"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 	"github.com/danifv27/soup/internal/infrastructure/watcher/kubernetes"
@@ -138,7 +137,12 @@ func (cmd *DiffCmd) Run(cli *CLI, f *WasSetted) error {
 	})
 	h.SetShutdownFunc(func(s os.Signal) error {
 
-		return nil
+		event := audit.Event{
+			Action:  "DiffShutdown",
+			Actor:   "system",
+			Message: "diff command shutdown",
+		}
+		return apps.Auditer.Audit(&event)
 	})
 
 	ports := infrastructure.NewPorts(apps, &h)

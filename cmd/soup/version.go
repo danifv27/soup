@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/danifv27/soup/internal/application"
+	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/danifv27/soup/internal/application/soup/commands"
 	"github.com/danifv27/soup/internal/infrastructure"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
@@ -70,7 +71,12 @@ func (cmd *VersionCmd) Run(cli *CLI, f *WasSetted) error {
 
 	h.SetShutdownFunc(func(s os.Signal) error {
 
-		return nil
+		event := audit.Event{
+			Action:  "VersionShutdown",
+			Actor:   "system",
+			Message: "version command shutdown",
+		}
+		return apps.Auditer.Audit(&event)
 	})
 
 	ports := infrastructure.NewPorts(apps, &h)
