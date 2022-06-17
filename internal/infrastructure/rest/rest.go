@@ -104,7 +104,7 @@ func (s *Server) Start(address string, wg *sync.WaitGroup, enableBitbucket bool,
 	})
 
 	loop := executor.NewLoop(s.apps, &h)
-	loop.Exec(wg)
+	loop.Exec(wg, "rest loop")
 }
 
 func (s *Server) Shutdown() {

@@ -124,7 +124,7 @@ func (cmd *RepoSubcmd) Run(cli *CLI, f *WasSetted) error {
 	wg := &sync.WaitGroup{}
 	ports.Actuators.SetActuatorRoot(cli.Sync.Actuator.Root)
 	ports.Actuators.Start(cli.Sync.Actuator.Address, wg, false, cli.Audit.Enable, cmd.VCS.Secret)
-	ports.MainLoop.Exec(wg)
+	ports.MainLoop.Exec(wg, "sync cmd")
 	wg.Wait()
 
 	return nil

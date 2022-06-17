@@ -26,16 +26,16 @@ func NewLoop(apps application.Applications, handler señales.SignalHandler) Loop
 	return loop
 }
 
-func (l *Loop) Exec(wg *sync.WaitGroup) {
+func (l *Loop) Exec(wg *sync.WaitGroup, desc string) {
 
 	// wg := &sync.WaitGroup{}
 	wg.Add(1)
 
 	go func() {
 		id := ksuid.New()
-		l.apps.LoggerService.With("id", id).Debug("starting executor")
+		l.apps.LoggerService.With("id", id).Debug("starting executor: %s", desc)
 		l.sigHandler.Run()
-		l.apps.LoggerService.With("id", id).Debug("finishing executor")
+		l.apps.LoggerService.With("id", id).Debug("finishing executor: %s", desc)
 		wg.Done()
 	}()
 

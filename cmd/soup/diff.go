@@ -149,7 +149,7 @@ func (cmd *DiffCmd) Run(cli *CLI, f *WasSetted) error {
 	wg := &sync.WaitGroup{}
 	ports.Actuators.SetActuatorRoot(cli.Diff.Actuator.Root)
 	ports.Actuators.Start(cli.Diff.Actuator.Address, wg, false, cli.Audit.Enable, "")
-	ports.MainLoop.Exec(wg)
+	ports.MainLoop.Exec(wg, "diff cmd")
 	wg.Wait()
 
 	return nil

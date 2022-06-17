@@ -81,7 +81,7 @@ func (cmd *VersionCmd) Run(cli *CLI, f *WasSetted) error {
 
 	ports := infrastructure.NewPorts(apps, &h)
 	wg := &sync.WaitGroup{}
-	ports.MainLoop.Exec(wg)
+	ports.MainLoop.Exec(wg, "version cmd")
 	wg.Wait()
 
 	return nil
