@@ -34,6 +34,7 @@ fi
 export CGO_ENABLED=0
 
 GIT_SHA=$(git rev-parse HEAD)
+# Check whether our Git repo contains a dirty index or untracked files
 GIT_DIRTY=$(git status --porcelain 2> /dev/null)
 if [ -z "${GIT_DIRTY}" ]; then
   GIT_TREE_STATE=clean
@@ -82,7 +83,7 @@ if [ ! -z "${DEBUG}" ]; then
   # Here `-N` will disable optimization and `-l` disable inlining. 
   cmd="${cmd} -gcflags \"all=-N -l\""    
 fi
-cmd="${cmd} ./cmd/**/*.go"
+cmd="${cmd} ./cmd/${BIN}/*.go"
 
 eval "${cmd}"
 # go build \
