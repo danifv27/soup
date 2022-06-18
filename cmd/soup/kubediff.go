@@ -14,7 +14,6 @@ import (
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/infrastructure"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
-	"github.com/danifv27/soup/internal/infrastructure/watcher/kubernetes"
 )
 
 type Informer struct {
@@ -52,17 +51,6 @@ type KubeDiffCmd struct {
 	Actuator Actuator `embed:"" prefix:"kubediff.actuator."`
 	Alert    Alert    `embed:"" prefix:"kubediff.alert."`
 	Informer Informer `embed:"" prefix:"kubediff.informer."`
-}
-
-func copyResources(resources []K8sResource) []kubernetes.Resource {
-	var res []kubernetes.Resource
-
-	for _, r := range resources {
-		resource := kubernetes.Resource(r)
-		res = append(res, resource)
-	}
-
-	return res
 }
 
 func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error) {
@@ -133,13 +121,13 @@ func (cmd *KubeDiffCmd) Run(cli *CLI, f *WasSetted) error {
 	h.SetShutdownFunc(func(s os.Signal) error {
 		apps.LoggerService.WithFields(logger.Fields{
 			"signal": s,
-		}).Debug("Diff cmd shutting down")
+		}).Debug("Kubediff cmd shutting down")
 		close(stopCh)
 		wgLoop.Done()
 		event := audit.Event{
-			Action:  "DiffShutdown",
+			Action:  "KubeDiffShutdown",
 			Actor:   "system",
-			Message: "diff command shutdown",
+			Message: "kubediff command shutdown",
 		}
 		return apps.Auditer.Audit(&event)
 	})
@@ -148,7 +136,7 @@ func (cmd *KubeDiffCmd) Run(cli *CLI, f *WasSetted) error {
 	ports.Actuators.SetActuatorRoot(cli.Kubediff.Actuator.Root)
 	wg := &sync.WaitGroup{}
 	ports.Actuators.Start(cli.Kubediff.Actuator.Address, wg, false, cli.Audit.Enable, "")
-	ports.MainLoop.Exec(wg, "diff cmd")
+	ports.MainLoop.Exec(wg, "kubediff cmd")
 	wg.Wait()
 
 	return nil
