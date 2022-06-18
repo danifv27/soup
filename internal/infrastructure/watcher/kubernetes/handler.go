@@ -16,6 +16,7 @@ const (
 	EventAdd    string = "EventAdd"
 	EventUpdate string = "EventUpdate"
 	EventDelete string = "EventDelete"
+	EventDiff   string = "EventDiff"
 )
 
 const (
@@ -29,26 +30,31 @@ func watchHandler(resourceType string, auditer audit.Auditer) cache.ResourceEven
 	var handler cache.ResourceEventHandlerFuncs
 
 	handler.AddFunc = func(obj interface{}) {
+		o := obj.(*unstructured.Unstructured)
 		e := audit.Event{
 			Action:  EventAdd,
 			Actor:   "TODO find k8s serviceAccount",
-			Message: fmt.Sprintf("k8s add %s: %v", resourceType, obj),
+			Message: fmt.Sprintf("%s (%s): %v", o.Object["metadata"].(map[string]interface{})["name"], resourceType, obj),
 		}
 		auditer.Audit(&e)
 	}
+
 	handler.UpdateFunc = func(old, new interface{}) {
+		o := new.(*unstructured.Unstructured)
 		e := audit.Event{
 			Action:  EventUpdate,
 			Actor:   "TODO find k8s serviceAccount",
-			Message: fmt.Sprintf("k8s update %s: %v", resourceType, new),
+			Message: fmt.Sprintf("%s (%s): %v", o.Object["metadata"].(map[string]interface{})["name"], resourceType, new),
 		}
 		auditer.Audit(&e)
 	}
+
 	handler.DeleteFunc = func(obj interface{}) {
+		o := obj.(*unstructured.Unstructured)
 		e := audit.Event{
 			Action:  EventDelete,
 			Actor:   "TODO find k8s serviceAccount",
-			Message: fmt.Sprintf("k8s delete %s: %v", resourceType, obj),
+			Message: fmt.Sprintf("%s (%s): %v", o.Object["metadata"].(map[string]interface{})["name"], resourceType, obj),
 		}
 		auditer.Audit(&e)
 	}
@@ -59,6 +65,16 @@ func watchHandler(resourceType string, auditer audit.Auditer) cache.ResourceEven
 func diffHandler(resourceType string, auditer audit.Auditer) cache.ResourceEventHandlerFuncs {
 	var handler cache.ResourceEventHandlerFuncs
 
+	// handler.AddFunc = func(obj interface{}) {
+	// 	o := obj.(*unstructured.Unstructured)
+	// 	e := audit.Event{
+	// 		Action:  EventAdd,
+	// 		Actor:   "TODO find k8s serviceAccount",
+	// 		Message: fmt.Sprintf("%s (%s): %v", o.Object["metadata"].(map[string]interface{})["name"], resourceType, obj),
+	// 	}
+	// 	auditer.Audit(&e)
+	// }
+
 	handler.UpdateFunc = func(old, new interface{}) {
 		oldObj := old.(*unstructured.Unstructured)
 		newObj := new.(*unstructured.Unstructured)
@@ -66,13 +82,23 @@ func diffHandler(resourceType string, auditer audit.Auditer) cache.ResourceEvent
 		if !equality.Semantic.DeepEqual(old, new) {
 			diff := deep.Equal(oldObj, newObj)
 			e := audit.Event{
-				Action:  EventUpdate,
+				Action:  EventDiff,
 				Actor:   "TODO find k8s serviceAccount",
-				Message: fmt.Sprintf("k8s update %s: %v -> %v", resourceType, old, diff),
+				Message: fmt.Sprintf("%s (%s): %v ", newObj.Object["metadata"].(map[string]interface{})["name"], resourceType, diff),
 			}
 			auditer.Audit(&e)
 		}
 	}
+
+	// handler.DeleteFunc = func(obj interface{}) {
+	// 	o := obj.(*unstructured.Unstructured)
+	// 	e := audit.Event{
+	// 		Action:  EventDelete,
+	// 		Actor:   "TODO find k8s serviceAccount",
+	// 		Message: fmt.Sprintf("%s (%s): %v", o.Object["metadata"].(map[string]interface{})["name"], resourceType, obj),
+	// 	}
+	// 	auditer.Audit(&e)
+	// }
 
 	return handler
 }
