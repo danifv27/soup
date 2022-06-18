@@ -117,7 +117,7 @@ func parseTimeInterval(source string) (time.Duration, error) {
 func NewWatcher(uri string, resources []Resource, namespaces []string, l logger.Logger, a audit.Auditer) (*WatcherHandler, error) {
 	var err error
 	var u *url.URL
-	var path, ctx string
+	var path, ctx, mode string
 	var context *string
 	var resync time.Duration
 
@@ -136,6 +136,10 @@ func NewWatcher(uri string, resources []Resource, namespaces []string, l logger.
 		if resync, err = parseTimeInterval(u.Query().Get("resync")); err != nil {
 			return nil, err
 		}
+		mode = u.Query().Get("mode")
+		if mode == "" {
+			mode = string(WatchMode)
+		}
 	default:
 		return nil, fmt.Errorf("NewWatcher: unsupported watcher implementation %q", u.Opaque)
 	}
@@ -143,6 +147,7 @@ func NewWatcher(uri string, resources []Resource, namespaces []string, l logger.
 	l.WithFields(logger.Fields{
 		"path":    path,
 		"context": context,
+		"mode":    mode,
 	}).Debug("Creating k8s config")
 	kubeconfig, err := k8s.NewClusterConfig(path, context)
 	if err != nil {

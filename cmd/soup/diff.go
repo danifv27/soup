@@ -48,11 +48,10 @@ func (r K8sResource) Decode(ctx *kong.DecodeContext, target reflect.Value) error
 	return nil
 }
 
-type DiffCmd struct {
-	Actuator Actuator `embed:"" prefix:"diff.actuator."`
-	Alert    Alert    `embed:"" prefix:"diff.alert."`
-	// K8s      K8s      `embed:"" prefix:"diff.k8s."`
-	Informer Informer `embed:"" prefix:"diff.informer."`
+type KubeDiffCmd struct {
+	Actuator Actuator `embed:"" prefix:"kubediff.actuator."`
+	Alert    Alert    `embed:"" prefix:"kubediff.alert."`
+	Informer Informer `embed:"" prefix:"kubediff.informer."`
 }
 
 func copyResources(resources []K8sResource) []kubernetes.Resource {
@@ -70,17 +69,17 @@ func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error)
 	var apps application.Applications
 
 	wArgs := infrastructure.WatcherArgs{
-		URI: cli.Diff.Informer.URI,
+		URI: cli.Kubediff.Informer.URI,
 		//Copy one struct to another where structs have same members and different types
-		Resources:  copyResources(cli.Diff.Informer.Resources),
-		Namespaces: cli.Diff.Informer.Namespaces,
+		Resources:  copyResources(cli.Kubediff.Informer.Resources),
+		Namespaces: cli.Kubediff.Informer.Namespaces,
 	}
 
 	gArgs := infrastructure.SVCArgs{
 		URI: "svc:noop",
 	}
 
-	infra, err := infrastructure.NewAdapters(gArgs, cli.Audit.URI, cli.Diff.Alert.URI, wArgs)
+	infra, err := infrastructure.NewAdapters(gArgs, cli.Audit.URI, cli.Kubediff.Alert.URI, wArgs)
 	if err != nil {
 		return application.Applications{}, fmt.Errorf("initializeDiffCmd: %w", err)
 	}
@@ -110,7 +109,7 @@ func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error)
 	return apps, nil
 }
 
-func (cmd *DiffCmd) Run(cli *CLI, f *WasSetted) error {
+func (cmd *KubeDiffCmd) Run(cli *CLI, f *WasSetted) error {
 	var err error
 	var apps application.Applications
 	var stopCh chan struct{}
@@ -146,9 +145,9 @@ func (cmd *DiffCmd) Run(cli *CLI, f *WasSetted) error {
 	})
 
 	ports := infrastructure.NewPorts(apps, &h)
-	ports.Actuators.SetActuatorRoot(cli.Diff.Actuator.Root)
+	ports.Actuators.SetActuatorRoot(cli.Kubediff.Actuator.Root)
 	wg := &sync.WaitGroup{}
-	ports.Actuators.Start(cli.Diff.Actuator.Address, wg, false, cli.Audit.Enable, "")
+	ports.Actuators.Start(cli.Kubediff.Actuator.Address, wg, false, cli.Audit.Enable, "")
 	ports.MainLoop.Exec(wg, "diff cmd")
 	wg.Wait()
 
