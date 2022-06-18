@@ -11,6 +11,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/danifv27/soup/internal/application"
 	"github.com/danifv27/soup/internal/application/audit"
+	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/infrastructure"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 	"github.com/danifv27/soup/internal/infrastructure/watcher/kubernetes"
@@ -50,7 +51,7 @@ func (r K8sResource) Decode(ctx *kong.DecodeContext, target reflect.Value) error
 type DiffCmd struct {
 	Actuator Actuator `embed:"" prefix:"diff.actuator."`
 	Alert    Alert    `embed:"" prefix:"diff.alert."`
-	K8s      K8s      `embed:"" prefix:"diff.k8s."`
+	// K8s      K8s      `embed:"" prefix:"diff.k8s."`
 	Informer Informer `embed:"" prefix:"diff.informer."`
 }
 
@@ -112,31 +113,30 @@ func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error)
 func (cmd *DiffCmd) Run(cli *CLI, f *WasSetted) error {
 	var err error
 	var apps application.Applications
+	var stopCh chan struct{}
 
 	if apps, err = initializeDiffCmd(cli, f); err != nil {
 		return fmt.Errorf("Run: %w", err)
 	}
 
+	wgLoop := &sync.WaitGroup{}
+
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {
-		var err error
+		wgLoop.Add(1)
+		stopCh = make(chan struct{})
 
-		req := commands.LoopBranchesRequest{}
-		if err = apps.Commands.LoopBranches.Handle(req); err != nil {
-			n := notification.Notification{
-				Message:     fmt.Sprintf("error deploying %s", cli.Sync.Repo.Path),
-				Description: err.Error(),
-				Priority:    cli.Diff.Alert.Priority,
-				Tags:        append([]string(nil), cli.Diff.Alert.Tags...),
-				Teams:       append([]string(nil), cli.Diff.Alert.Teams...),
-			}
-			apps.Notifier.Notify(n)
-		}
+		apps.Informer.Start(stopCh)
+		wgLoop.Wait()
 
-		return err
+		return nil
 	})
 	h.SetShutdownFunc(func(s os.Signal) error {
-
+		apps.LoggerService.WithFields(logger.Fields{
+			"signal": s,
+		}).Debug("Diff cmd shutting down")
+		close(stopCh)
+		wgLoop.Done()
 		event := audit.Event{
 			Action:  "DiffShutdown",
 			Actor:   "system",
@@ -146,8 +146,8 @@ func (cmd *DiffCmd) Run(cli *CLI, f *WasSetted) error {
 	})
 
 	ports := infrastructure.NewPorts(apps, &h)
-	wg := &sync.WaitGroup{}
 	ports.Actuators.SetActuatorRoot(cli.Diff.Actuator.Root)
+	wg := &sync.WaitGroup{}
 	ports.Actuators.Start(cli.Diff.Actuator.Address, wg, false, cli.Audit.Enable, "")
 	ports.MainLoop.Exec(wg, "diff cmd")
 	wg.Wait()

@@ -33,9 +33,9 @@ func (l *Loop) Exec(wg *sync.WaitGroup, desc string) {
 
 	go func() {
 		id := ksuid.New()
-		l.apps.LoggerService.With("id", id).Debug("starting executor: %s", desc)
+		l.apps.LoggerService.With("id", id).Debug("starting executor: ", desc)
 		l.sigHandler.Run()
-		l.apps.LoggerService.With("id", id).Debug("finishing executor: %s", desc)
+		l.apps.LoggerService.With("id", id).Debug("finishing executor: ", desc)
 		wg.Done()
 	}()
 
