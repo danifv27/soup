@@ -36,21 +36,21 @@ type Alert struct {
 }
 
 type CLI struct {
-	Logging Log        `embed:"" prefix:"logging."`
-	Audit   Auditer    `embed:"" prefix:"audit."`
-	Version VersionCmd `cmd:"" help:"Show the version information"`
-	Sync    SyncCmd    `cmd:"" help:"Sync kubernetes with VCS contents"`
-	Diff    DiffCmd    `cmd:"" help:"Kubernetes resource diff"`
+	Logging  Log         `embed:"" prefix:"logging."`
+	Audit    Auditer     `embed:"" prefix:"audit."`
+	Version  VersionCmd  `cmd:"" help:"Show the version information"`
+	Sync     SyncCmd     `cmd:"" help:"Sync kubernetes with VCS contents"`
+	Kubediff KubeDiffCmd `cmd:"" help:"Kubernetes resource diff"`
 }
 
 func main() {
 	var err error
 
 	cli := CLI{
-		Logging: Log{},
-		Version: VersionCmd{},
-		Sync:    SyncCmd{},
-		Diff:    DiffCmd{},
+		Logging:  Log{},
+		Version:  VersionCmd{},
+		Sync:     SyncCmd{},
+		Kubediff: KubeDiffCmd{},
 	}
 
 	setted := WasSetted{
