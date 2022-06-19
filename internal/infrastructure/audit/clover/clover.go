@@ -138,7 +138,7 @@ func (c CloverAuditer) GetEvents(option *audit.GetEventOption) ([]audit.Event, e
 	//Find all documents between start and end time
 	sorting := clover.SortOption{
 		Field:     "created_at",
-		Direction: 1,
+		Direction: -1,
 	}
 	if docs, err = query.Sort(sorting).Where(criteria).FindAll(); err != nil {
 		return nil, fmt.Errorf("GetEvents: %w", err)
