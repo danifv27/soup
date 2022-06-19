@@ -8,6 +8,7 @@ import (
 
 	"github.com/danifv27/soup/internal/application"
 	"github.com/danifv27/soup/internal/application/audit"
+	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/application/soup/commands"
 	"github.com/danifv27/soup/internal/infrastructure"
@@ -91,6 +92,17 @@ func (cmd *RepoSubcmd) Run(cli *CLI, f *WasSetted) error {
 		return fmt.Errorf("Run: %w", err)
 	}
 
+	event := audit.Event{
+		Action:  "SyncRun",
+		Actor:   "system",
+		Message: "sync command run",
+	}
+	if err = apps.Auditer.Audit(&event); err != nil {
+		apps.LoggerService.WithFields(logger.Fields{
+			"err": fmt.Errorf("Run: %w", err),
+		}).Info("check audit subsystem")
+	}
+
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
 	h.SetRunFunc(func() error {
 		var err error
@@ -136,6 +148,17 @@ func (cmd *ServeSubcmd) Run(cli *CLI, f *WasSetted) error {
 
 	if apps, err = initializeSyncCmd(cli, cmd.Path, cmd.VCS, f); err != nil {
 		return fmt.Errorf("Run: %w", err)
+	}
+
+	event := audit.Event{
+		Action:  "ServeRun",
+		Actor:   "system",
+		Message: "serve command run",
+	}
+	if err = apps.Auditer.Audit(&event); err != nil {
+		apps.LoggerService.WithFields(logger.Fields{
+			"err": fmt.Errorf("Run: %w", err),
+		}).Info("check audit subsystem")
 	}
 
 	ports := infrastructure.NewPorts(apps, nil)

@@ -72,6 +72,17 @@ func (cmd *KubeDiffCmd) Run(cli *CLI, f *WasSetted) error {
 		return fmt.Errorf("Run: %w", err)
 	}
 
+	event := audit.Event{
+		Action:  "KubeDiffRun",
+		Actor:   "system",
+		Message: "kubediff command run",
+	}
+	if err = apps.Auditer.Audit(&event); err != nil {
+		apps.LoggerService.WithFields(logger.Fields{
+			"err": fmt.Errorf("Run: %w", err),
+		}).Info("check audit subsystem")
+	}
+
 	wgLoop := &sync.WaitGroup{}
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, apps.LoggerService)
