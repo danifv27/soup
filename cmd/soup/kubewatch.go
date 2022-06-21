@@ -10,6 +10,7 @@ import (
 	"github.com/danifv27/soup/internal/application/audit"
 	"github.com/danifv27/soup/internal/application/logger"
 	"github.com/danifv27/soup/internal/infrastructure"
+	"github.com/danifv27/soup/internal/infrastructure/rest"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 )
 
@@ -112,7 +113,13 @@ func (cmd *KubeWatchCmd) Run(cli *CLI, f *WasSetted) error {
 	ports := infrastructure.NewPorts(apps, &h)
 	ports.Actuators.SetActuatorRoot(cli.Kubewatch.Actuator.Root)
 	wg := &sync.WaitGroup{}
-	ports.Actuators.Start(cli.Kubewatch.Actuator.Address, wg, false, cli.Audit.Enable, "")
+	rArgs := rest.RestArgs{
+		Address:         cli.Kubewatch.Actuator.Address,
+		EnableBitbucket: false,
+		BitbucketSecret: "",
+		EnableAudit:     cli.Audit.Enable,
+	}
+	ports.Actuators.Start(rArgs, wg)
 	ports.MainLoop.Exec(wg, "kubewatch cmd")
 	wg.Wait()
 

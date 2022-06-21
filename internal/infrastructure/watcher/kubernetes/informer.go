@@ -9,9 +9,12 @@ import (
 )
 
 type multiResourceInformer struct {
-	resourceToGVR      map[string]schema.GroupVersionResource
+	//GroupVersionResource per kind of resource to watch
+	resourceToGVR map[string]schema.GroupVersionResource
+	//informer per namespace and resource
 	resourceToInformer map[string]map[string]cache.SharedIndexInformer
-	informerFactory    []dynamicinformer.DynamicSharedInformerFactory
+	//one factory per namespace
+	informerFactory []dynamicinformer.DynamicSharedInformerFactory
 }
 
 // addEventHandler adds the handler to each namespaced informer

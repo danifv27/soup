@@ -12,6 +12,7 @@ import (
 	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/application/soup/commands"
 	"github.com/danifv27/soup/internal/infrastructure"
+	"github.com/danifv27/soup/internal/infrastructure/rest"
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 )
 
@@ -163,8 +164,14 @@ func (cmd *ServeSubcmd) Run(cli *CLI, f *WasSetted) error {
 
 	ports := infrastructure.NewPorts(apps, nil)
 	wg := &sync.WaitGroup{}
+	rArgs := rest.RestArgs{
+		Address:         cli.Sync.Actuator.Address,
+		EnableBitbucket: true,
+		BitbucketSecret: cmd.VCS.Secret,
+		EnableAudit:     cli.Audit.Enable,
+	}
 	ports.Actuators.SetActuatorRoot(cli.Sync.Actuator.Root)
-	ports.Actuators.Start(cli.Sync.Actuator.Address, wg, true, cli.Audit.Enable, cmd.VCS.Secret)
+	ports.Actuators.Start(rArgs, wg)
 	wg.Wait()
 
 	return nil

@@ -71,6 +71,17 @@
             "showLog": true
         },
         {
+            "name": "Watch",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/soup",
+            "args": [
+                "kubewatch"
+            ],
+            "showLog": true
+        },
+        {
             "name": "Attach Webhook Bitbucket With Envars",
             "type": "go",
             "request": "attach",
