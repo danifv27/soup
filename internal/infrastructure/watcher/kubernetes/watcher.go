@@ -41,8 +41,9 @@ func newMultiResourceInformer(res []Resource, resyncPeriod time.Duration, namesp
 	dynamicInformers := make([]dynamicinformer.DynamicSharedInformerFactory, 0, len(namespaces))
 
 	for _, ns := range namespaces {
-
 		namespace := getNamespace(ns)
+		// Create a factory object that we can say "hey, I need to watch this resource"
+		// and it will give us back an informer for it
 		di := dynamicinformer.NewFilteredDynamicSharedInformerFactory(
 			client.DynamicClient,
 			resyncPeriod,
@@ -117,6 +118,7 @@ func NewWatcher(uri string, resources []Resource, namespaces []string, l logger.
 	var path, ctx, mode string
 	var context *string
 	var resync time.Duration
+	var kubemode runMode
 
 	if u, err = validateURISchema(uri); err != nil {
 		return nil, err
@@ -134,8 +136,11 @@ func NewWatcher(uri string, resources []Resource, namespaces []string, l logger.
 			return nil, err
 		}
 		mode = u.Query().Get("mode")
-		if mode == "" {
-			mode = string(WatchMode)
+		switch {
+		case mode == "diff":
+			kubemode = DiffMode
+		default:
+			kubemode = WatchMode
 		}
 	default:
 		return nil, fmt.Errorf("NewWatcher: unsupported watcher implementation %q", u.Opaque)
@@ -171,7 +176,7 @@ func NewWatcher(uri string, resources []Resource, namespaces []string, l logger.
 		informer: i,
 	}
 
-	watcher.AddEventHandler(getEventHandler(DiffMode), a)
+	watcher.AddEventHandler(getEventHandler(kubemode), a)
 
 	return &watcher, nil
 }

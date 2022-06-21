@@ -19,6 +19,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type RestArgs struct {
+	Address         string
+	EnableBitbucket bool
+	BitbucketSecret string
+	EnableAudit     bool
+}
+
 //Server
 type Server struct {
 	apps       application.Applications
@@ -70,23 +77,23 @@ func (s *Server) addAuditRoutes() {
 	}).Debug("Routes added")
 }
 
-func (s *Server) Start(address string, wg *sync.WaitGroup, enableBitbucket bool, enableAudit bool, bitbucketSecret string) {
+func (s *Server) Start(args RestArgs, wg *sync.WaitGroup) {
 
 	s.addProbeRoutes()
-	if enableBitbucket {
-		s.addBitbucketWebhookRoutes(bitbucketSecret)
+	if args.EnableBitbucket {
+		s.addBitbucketWebhookRoutes(args.BitbucketSecret)
 	}
-	if enableAudit {
+	if args.EnableAudit {
 		s.addAuditRoutes()
 	}
 	s.httpServer = &http.Server{
-		Addr:    address,
+		Addr:    args.Address,
 		Handler: s.router,
 	}
 
 	h := signals.NewSignalHandler([]os.Signal{syscall.SIGKILL, syscall.SIGHUP, syscall.SIGTERM}, s.apps.LoggerService)
 	h.SetRunFunc(func() error {
-		s.apps.LoggerService.Infof("starting actuators on %s", address)
+		s.apps.LoggerService.Infof("starting actuators on %s", args.Address)
 		err := s.httpServer.ListenAndServe() // Blocks!
 		if err != http.ErrServerClosed {
 			s.apps.LoggerService.With("err", err).Error("http server stopped unexpected")
