@@ -46,7 +46,7 @@ BUILD_DATE=$(date '+%Y-%m-%d-%H:%M:%S')
 # To optimize the build for alpine linux
 # LDFLAGS="${LDFLAGS} -w -linkmode external -extldflags \"-static\""
 
-VERSION_JSON=./internal/infrastructure/storage/embed/version.json
+VERSION_JSON=../../internal/infrastructure/storage/embed/version.json
 cat <<- EOF > ${VERSION_JSON}
 {
   "version":"${VERSION}",
@@ -83,7 +83,7 @@ if [ ! -z "${DEBUG}" ]; then
   # Here `-N` will disable optimization and `-l` disable inlining. 
   cmd="${cmd} -gcflags \"all=-N -l\""    
 fi
-cmd="${cmd} ./cmd/${BIN}/*.go"
+cmd="${cmd} ./*.go"
 
 eval "${cmd}"
 # go build \

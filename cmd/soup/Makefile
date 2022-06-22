@@ -99,7 +99,7 @@ output/$(GOOS)/$(GOARCH)/bin/$(BIN): build-dirs
 	BIN=$(BIN) \
 	DEBUG=$(DEBUG) \
 	OUTPUT_DIR=./output/$(GOOS)/$(GOARCH)/bin \
-	./scripts/build.sh
+	../../scripts/build.sh
 
 PHONY: local
 local: build-dirs ## Build application for the local arch
@@ -113,7 +113,7 @@ local: build-dirs ## Build application for the local arch
 	BIN=$(BIN) \
 	OUTPUT_DIR=$$(pwd)/output/$(GOOS)/$(GOARCH)/bin \
 	DEBUG=$(DEBUG) \
-	scripts/build.sh
+	../../scripts/build.sh
 
 PHONY: build-dirs
 build-dirs:

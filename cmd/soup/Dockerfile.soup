@@ -1,6 +1,7 @@
 # build stage
 FROM golang:alpine AS build-env
 
+RUN pwd; ls -lah
 ADD . /src
 RUN apk add --update --no-cache openssl git make
 RUN cd /src && make build-linux-amd64
