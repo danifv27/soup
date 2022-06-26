@@ -22,7 +22,7 @@ RUN \
 	&& useradd -u $user_id -c "$user_name System Account" -U -m $user_name
 #Add delve to current build
 COPY --from=build-env /go/bin/dlv /usr/local/bin
-COPY --from=build-env /src/output/linux/amd64/bin/soup /app/bin
+COPY --from=build-env /src/cmd/soup/output/linux/amd64/bin/soup /app/bin
 
 RUN chown 42924 -R /app
 

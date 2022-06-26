@@ -21,7 +21,7 @@ RUN \
 	apk add --update --no-cache git shadow \
 	&& useradd -u $user_id -c "$user_name System Account" -U -m $user_name -K UID_MAX=43000
 
-COPY --from=build-env /src/output/linux/amd64/bin/soup /app/bin
+COPY --from=build-env /src/cmd/soup/output/linux/amd64/bin/soup /app/bin
 
 RUN chown 42924 -R /app
 
