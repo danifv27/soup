@@ -4,7 +4,7 @@ FROM golang:alpine AS build-env
 RUN apk add --update --no-cache openssl git make && rm -rf /var/cache/apk/*
 RUN CGO_ENABLED=0 go install -ldflags "-s -w -extldflags '-static'" github.com/go-delve/delve/cmd/dlv@v1.8.3
 ADD . /src
-RUN cd /src && DEBUG=true make build-linux-amd64
+RUN cd /src/cmd/soup && DEBUG=true make build-linux-amd64
 
 # final stage
 FROM alpine

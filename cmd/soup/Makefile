@@ -44,15 +44,18 @@ BASE64_PASSWORD_DANIFV27 = ZHVtbXlWYWx1ZQ==
 
 # timestamp value that is formatted according to the RFC3339 standard
 BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+BUILD_TARGET ?= 
 
 # Set default base image dynamically for each arch
 ifeq ($(GOARCH),amd64)
 ifeq ($(DEBUG),true)
 	DOCKERFILE ?= Dockerfile.$(BIN).debug
 	VERSION_SUFFIX := -DBG
+	BUILD_CACHE :=
 else
 	DOCKERFILE ?= Dockerfile.$(BIN)
 	VERSION_SUFFIX := 
+	BUILD_CACHE :=  --no-cache
 endif
 endif
 
@@ -67,6 +70,8 @@ VCS_PROTOCOL ?= https
 VCS_URL ?= github.com/danifv27/soup.git
 VCS_REF:= $(shell git rev-parse HEAD)
 VCS_BRANCH := $(shell git symbolic-ref --short -q HEAD)
+
+TOP_LEVEL = ../..
 
 PHONY: init 
 init: ./go.mod ## Initialize the module
@@ -99,7 +104,7 @@ output/$(GOOS)/$(GOARCH)/bin/$(BIN): build-dirs
 	BIN=$(BIN) \
 	DEBUG=$(DEBUG) \
 	OUTPUT_DIR=./output/$(GOOS)/$(GOARCH)/bin \
-	../../scripts/build.sh
+	$(TOP_LEVEL)/scripts/build.sh
 
 PHONY: local
 local: build-dirs ## Build application for the local arch
@@ -113,7 +118,7 @@ local: build-dirs ## Build application for the local arch
 	BIN=$(BIN) \
 	OUTPUT_DIR=$$(pwd)/output/$(GOOS)/$(GOARCH)/bin \
 	DEBUG=$(DEBUG) \
-	../../scripts/build.sh
+	$(TOP_LEVEL)/scripts/build.sh
 
 PHONY: build-dirs
 build-dirs:
@@ -145,15 +150,15 @@ coverage: ## Generates the total code coverage of the project
 .PHONY: package
 package: ## Create a docker image of the project
 	@echo "Packaging image: $(VERSION) [$(GIT_COMMIT)]"
-	$(Q)docker build --no-cache \
+	$(Q)docker build $(BUILD_CACHE) \
 		--label 'org.label-schema.vcs-url=$(VCS_PROTOCOL)://$(VCS_USER):$(VCS_PASSWORD)@$(VCS_URL)' \
 		--label 'org.label-schema.vcs-ref=$(VCS_REF)' \
 		--label 'org.label-schema.version=$(VERSION)' \
 		--label 'org.label-schema.name=$(BIN)', \
 		--label 'org.label-schema.build-date=$(BUILD_DATE)' \
 		--label 'org.label-schema.vendor=adidas' \
-		$(PROGRESS) \
-		-t $(IMAGE_NAME_LC):local -f $(DOCKERFILE) .
+		$(PROGRESS) $(DOCKER_TARGET) \
+		-t $(IMAGE_NAME_LC):local -f $(DOCKERFILE) $(TOP_LEVEL)
 
 .PHONY: tag
 tag: ## Tag image created by package with latest, git commit and version

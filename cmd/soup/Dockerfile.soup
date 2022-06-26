@@ -4,7 +4,7 @@ FROM golang:alpine AS build-env
 RUN pwd; ls -lah
 ADD . /src
 RUN apk add --update --no-cache openssl git make
-RUN cd /src && make build-linux-amd64
+RUN cd /src/cmd/soup && make build-linux-amd64
 
 # final stage
 FROM alpine
@@ -19,7 +19,7 @@ ARG user_id=42924
 # Adding shadow package to install necessary commands in order to create users
 RUN \
 	apk add --update --no-cache git shadow \
-	&& useradd -u $user_id -c "$user_name System Account" -U -m $user_name
+	&& useradd -u $user_id -c "$user_name System Account" -U -m $user_name -K UID_MAX=43000
 
 COPY --from=build-env /src/output/linux/amd64/bin/soup /app/bin
 
