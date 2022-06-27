@@ -3,9 +3,6 @@ package kubernetes
 import (
 	"fmt"
 	"net/url"
-	"regexp"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/danifv27/soup/internal/application/audit"
@@ -83,36 +80,36 @@ func validateURISchema(uri string) (*url.URL, error) {
 	return u, nil
 }
 
-func parseTimeInterval(source string) (time.Duration, error) {
-	var intervalRegex = regexp.MustCompile(`([0-9]+)([smhdw])`)
-	var err error
-	var val int
+// func ParseTimeInterval(source string) (time.Duration, error) {
+// 	var intervalRegex = regexp.MustCompile(`([0-9]+)([smhdw])`)
+// 	var err error
+// 	var val int
 
-	matches := intervalRegex.FindStringSubmatch(strings.ToLower(source))
+// 	matches := intervalRegex.FindStringSubmatch(strings.ToLower(source))
 
-	if matches == nil {
-		return 0, fmt.Errorf("parseTimeInterval: no matches %s", source)
-	}
+// 	if matches == nil {
+// 		return 0, fmt.Errorf("parseTimeInterval: no matches %s", source)
+// 	}
 
-	if val, err = strconv.Atoi(matches[1]); err != nil {
-		return 0, err
-	}
+// 	if val, err = strconv.Atoi(matches[1]); err != nil {
+// 		return 0, err
+// 	}
 
-	switch matches[2] {
-	case "s":
-		return time.Duration(val) * time.Second, nil
-	case "m":
-		return time.Duration(val) * time.Second * 60, nil
-	case "h":
-		return time.Duration(val) * time.Second * 60 * 60, nil
-	case "d":
-		return time.Duration(val) * time.Second * 60 * 60 * 24, nil
-	case "w":
-		return time.Duration(val) * time.Second * 60 * 60 * 24 * 7, nil
-	default:
-		return 0, fmt.Errorf("parseTimeInterval: unknown unit %s", source)
-	}
-}
+// 	switch matches[2] {
+// 	case "s":
+// 		return time.Duration(val) * time.Second, nil
+// 	case "m":
+// 		return time.Duration(val) * time.Second * 60, nil
+// 	case "h":
+// 		return time.Duration(val) * time.Second * 60 * 60, nil
+// 	case "d":
+// 		return time.Duration(val) * time.Second * 60 * 60 * 24, nil
+// 	case "w":
+// 		return time.Duration(val) * time.Second * 60 * 60 * 24 * 7, nil
+// 	default:
+// 		return 0, fmt.Errorf("parseTimeInterval: unknown unit %s", source)
+// 	}
+// }
 
 func NewWatcher(uri string, resources []Resource, namespaces []string, l logger.Logger, a audit.Auditer) (*WatcherHandler, error) {
 	var err error
@@ -133,7 +130,7 @@ func NewWatcher(uri string, resources []Resource, namespaces []string, l logger.
 			context = nil
 		}
 		context = &ctx
-		if resync, err = parseTimeInterval(u.Query().Get("resync")); err != nil {
+		if resync, err = time.ParseDuration(u.Query().Get("resync")); err != nil {
 			return nil, err
 		}
 	default:

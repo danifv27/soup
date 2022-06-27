@@ -20,7 +20,7 @@ import (
 type Informer struct {
 	URI        string        `help:"K8s Informer URI" env:"SOUP_INFORMER_URI" hidden:"" default:"informer:k8s?context=aws-dummy&path=kubeconfig-path&resync=45s&mode=diff"`
 	Resources  []K8sResource `default:"v1/services,apps/v1/deployments" env:"SOUP_INFORMER_RESOURCES" help:"Resources to be watched"`
-	Namespaces []string      `default:"all" env:"SOUP_INFORMER_NAMESPACES" help:"Namespace to watch"`
+	Namespaces []string      `default:"all" env:"SOUP_INFORMER_NAMESPACES" help:"Namespaces to watch"`
 }
 
 type K8sResource struct {
