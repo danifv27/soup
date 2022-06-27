@@ -67,7 +67,7 @@ func NewApplications(logger logger.Logger,
 			GetReadinessInfoHandler: queries.NewGetReadinessInfoHandler(probes, git),
 		},
 		Commands: Commands{
-			PrintVersion:  commands.NewPrintVersionRequestHandler(version, notifier),
+			PrintVersion:  commands.NewPrintVersionRequestHandler(version),
 			LoopBranches:  commands.NewLoopBranchesRequestHandler(git, deploy, config, logger),
 			ProcessBranch: commands.NewProcessBranchRequestHandler(git, deploy, config, logger, auditer),
 		},

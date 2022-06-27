@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/danifv27/soup/internal/application/notification"
 	"github.com/danifv27/soup/internal/domain/soup"
 )
 
@@ -17,16 +16,14 @@ type PrintVersionRequestHandler interface {
 }
 
 type printVersionRequestHandler struct {
-	repo     soup.Version
-	notifier notification.Notifier
+	repo soup.Version
 }
 
 //NewUpdateCragRequestHandler Constructor
-func NewPrintVersionRequestHandler(version soup.Version, notifier notification.Notifier) PrintVersionRequestHandler {
+func NewPrintVersionRequestHandler(version soup.Version) PrintVersionRequestHandler {
 
 	return printVersionRequestHandler{
-		repo:     version,
-		notifier: notifier,
+		repo: version,
 	}
 }
 
@@ -35,7 +32,6 @@ func (h printVersionRequestHandler) Handle(command PrintVersionRequest) error {
 	var info *soup.VersionInfo
 	var err error
 	var out []byte
-	var notif notification.Notification
 
 	if info, err = h.repo.GetVersionInfo(); err != nil {
 		return fmt.Errorf("Handle: %w", err)
@@ -44,17 +40,10 @@ func (h printVersionRequestHandler) Handle(command PrintVersionRequest) error {
 		if out, err = json.MarshalIndent(info, "", "    "); err != nil {
 			return fmt.Errorf("Handle: %w", err)
 		}
-		notif = notification.Notification{
-			Message: string(out),
-		}
-		// fmt.Println(string(out))
+		fmt.Println(string(out))
 	} else {
-		// fmt.Println(info)
-		notif = notification.Notification{
-			Message: fmt.Sprint(info),
-		}
+		fmt.Println(info)
 	}
-	h.notifier.Notify(notif)
 
 	return nil
 }

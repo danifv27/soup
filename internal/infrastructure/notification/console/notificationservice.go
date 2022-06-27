@@ -23,6 +23,6 @@ func NewNotificationService() *NotificationService {
 // Notify prints out the notifications in console
 func (svc *NotificationService) Notify(notification notification.Notification) error {
 
-	fmt.Printf(notification.Message)
+	fmt.Println(notification.Message)
 	return nil
 }

@@ -1,0 +1,19 @@
+{
+    "logging": {
+        "level": "debug",
+        "format": "logger:stdout?json=false"
+    },
+    "net": {
+        "version": {
+            "format": "json"
+        },
+        "wait": {
+            "protocol": "udp",
+            "addresses": "address1:por1,address2:port2,address3:port3",
+            "deadline": "15s",
+            "wait": "1m",
+            "break": "5s",
+            "packet": "this is udp packet"
+        }
+    }
+}
