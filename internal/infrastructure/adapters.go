@@ -27,6 +27,7 @@ import (
 	"github.com/danifv27/soup/internal/application/watcher"
 	"github.com/danifv27/soup/internal/domain/soup"
 	"github.com/danifv27/soup/internal/infrastructure/audit/clover"
+	auditNoop "github.com/danifv27/soup/internal/infrastructure/audit/noop"
 	"github.com/danifv27/soup/internal/infrastructure/deployment"
 	"github.com/danifv27/soup/internal/infrastructure/logger/logrus"
 	"github.com/danifv27/soup/internal/infrastructure/notification/console"
@@ -88,8 +89,17 @@ func NewAdapters(gArgs SVCArgs, auditerURI string, notifierURI string, wArgs Wat
 	var w watcher.Informer
 
 	l := logrus.NewLoggerService()
-	if a, err = clover.NewCloverAuditer(auditerURI); err != nil {
+
+	if opaque, err = getOpaqueFromURI(auditerURI); err != nil {
 		return Adapters{}, fmt.Errorf("NewAdapters: %w", err)
+	}
+	switch {
+	case opaque == "clover":
+		if a, err = clover.NewCloverAuditer(auditerURI); err != nil {
+			return Adapters{}, fmt.Errorf("NewAdapters: %w", err)
+		}
+	case opaque == "noop":
+		a = auditNoop.NewAuditer()
 	}
 	if opaque, err = getOpaqueFromURI(gArgs.URI); err != nil {
 		return Adapters{}, fmt.Errorf("NewAdapters: %w", err)
