@@ -14,7 +14,7 @@ import (
 )
 
 type VersionCmd struct {
-	Format string `prefix:"version." short:"f" help:"Format the output (pretty|json)." enum:"pretty,json" default:"pretty"`
+	Format string `prefix:"version." short:"v" help:"Format the output (pretty|json)." enum:"pretty,json" default:"pretty"`
 }
 
 func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, error) {
@@ -27,7 +27,7 @@ func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, err
 	gArgs := infrastructure.SVCArgs{
 		URI: "svc:noop",
 	}
-	infra, err := infrastructure.NewAdapters(gArgs, cli.Audit.URI, "notifier:console", wArgs) //Version command does not need to talk with opsgenie
+	infra, err := infrastructure.NewAdapters(gArgs, "audit:noop", "notifier:console", wArgs) //Version command does not need to talk with opsgenie
 	if err != nil {
 		return application.Applications{}, fmt.Errorf("initializeVersionCmd: %w", err)
 	}
