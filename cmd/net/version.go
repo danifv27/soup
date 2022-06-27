@@ -13,8 +13,8 @@ import (
 	"github.com/danifv27/soup/internal/infrastructure/signals"
 )
 
-type VersionCmd struct {
-	Format string `prefix:"version." short:"v" help:"Format the output (pretty|json)." enum:"pretty,json" default:"pretty"`
+type VersionFlags struct {
+	Format string `prefix:"net.version." short:"v" help:"Format the output (pretty|json)." enum:"pretty,json" default:"pretty"`
 }
 
 func initializeVersionCmd(cli *CLI) (application.Applications, error) {
@@ -63,7 +63,7 @@ func (cmd *VersionCmd) Run(cli *CLI) error {
 	h.SetRunFunc(func() error {
 
 		req := commands.PrintVersionRequest{
-			Format: cli.Version.Format,
+			Format: cli.Version.Flags.Format,
 		}
 		err = apps.Commands.PrintVersion.Handle(req)
 
@@ -75,14 +75,14 @@ func (cmd *VersionCmd) Run(cli *CLI) error {
 		event := audit.Event{
 			Action:  "VersionShutdown",
 			Actor:   "system",
-			Message: "version command shutdown",
+			Message: "net version shutdown",
 		}
 		return apps.Auditer.Audit(&event)
 	})
 
 	ports := infrastructure.NewPorts(apps, &h)
 	wg := &sync.WaitGroup{}
-	ports.MainLoop.Exec(wg, "version cmd")
+	ports.MainLoop.Exec(wg, "net version cmd")
 	wg.Wait()
 
 	return nil

@@ -13,13 +13,18 @@ type Log struct {
 	Format string `help:"The log target and format. Example: logger:syslog?appname=bob&local=7 or logger:stdout?json=true" default:"logger:stdout?json=false" env:"SOUP_LOGGING_FORMAT"`
 }
 
-type NetCmd struct {
-}
-
 type CLI struct {
 	Logging Log        `embed:"" prefix:"logging."`
 	Version VersionCmd `cmd:"" help:"Show the version information"`
-	Net     NetCmd     `cmd:"" help:"utility and GO package to wait for port to open (TCP, UDP)."`
+	Wait    WaitCmd    `cmd:"" help:"Wait for port to open (TCP, UDP)."`
+}
+
+type WaitCmd struct {
+	Flags WaitFlags `embed:""`
+}
+
+type VersionCmd struct {
+	Flags VersionFlags `embed:""`
 }
 
 func main() {
@@ -55,11 +60,3 @@ func main() {
 	err = ctx.Run(&cli)
 	ctx.FatalIfErrorf(err)
 }
-
-// flagSet.StringVar(&conf.proto, "proto", "tcp", "tcp")
-// flagSet.StringVar(&conf.addrs, "addrs", "", "address:port(,address:port,address:port,...)")
-// flagSet.UintVar(&conf.deadlineMS, "deadline", 10000, "deadline in milliseconds")
-// flagSet.UintVar(&conf.delayMS, "wait", 100, "delay of single request in milliseconds")
-// flagSet.UintVar(&conf.breakMS, "delay", 50, "break between requests in milliseconds")
-// flagSet.BoolVar(&conf.debug, "debug", false, "debug messages toggler")
-// flagSet.StringVar(&conf.packetBase64, "packet", "", "UDP packet to be sent")

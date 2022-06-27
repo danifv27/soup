@@ -6,7 +6,7 @@
     "configurations": [
 
         {
-            "name": "Debug Version Command",
+            "name": "Soup version",
             "type": "go",
             "request": "launch",
             "mode": "debug",
@@ -24,7 +24,7 @@
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/soup",
             "env": {
-                "SOUP_SYNC_TOKEN": "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"
+                "SOUP_SYNC_TOKEN": "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",
                 "SOUP_VCS_USERNAME": "danifv27",
                 "SOUP_ALERT_TAGS": "sre,soup,papp",
                 "SOUP_ALERT_PRIORITY": "P4",
@@ -81,6 +81,36 @@
 			"showLog": true,
 			"trace": "verbose",
 			"logOutput": "debugger"
-        }
+        },
+        {
+            "name": "Net wait without Envars",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/net",
+            "args": [
+                "wait"
+            ],
+            // "env": {
+            //     "SOUP_NET_PROTOCOL": "tcp",
+            //     "SOUP_NET_ADDRESSES": "addressA:portA,addressB:portB"
+            // },
+            "showLog": true
+        },
+        {
+            "name": "Net version",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/net",
+            "args": [
+                "version"
+            ],
+            // "env": {
+            //     "SOUP_NET_PROTOCOL": "tcp",
+            //     "SOUP_NET_ADDRESSES": "addressA:portA,addressB:portB"
+            // },
+            "showLog": true
+        },
     ]
 }
