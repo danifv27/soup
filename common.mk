@@ -1,12 +1,66 @@
+ifeq ($(V),1)
+  Q =
+  PROGRESS = --progress plain
+else
+  Q = @
+  PROGRESS = 
+endif
+
+# Where to push the docker image.
+# DOCKER_REGISTRY ?= registry.hub.docker.com
+DOCKER_REGISTRY ?= registry.tools.3stripes.net
+
+# Which architecture to build - see $(ALL_ARCH) for options.
+# if the 'local' rule is being run, detect the ARCH from 'go env'
+# if it wasn't specified by the caller.
+local : ARCH ?= $(shell go env GOOS)-$(shell go env GOARCH)
+ARCH ?= linux-amd64
+
+REVISION := $(shell echo $$(git rev-parse --short HEAD) ||echo "Unknown Revision")
+
+BUILDINFO_TAG ?= $(shell echo $$(git describe --long --all | tr '/' '-')$$(git diff-index --quiet HEAD -- || echo '-dirty-'$$(git diff-index -u HEAD | openssl sha1 | cut -c 10-17)))
+VCS_TAG := $(shell git describe --tags)
+ifeq ($(VCS_TAG),)
+VCS_TAG := $(BUILDINFO_TAG)
+endif
+
+ifeq ($(VERSION),)
+VERSION := $(VCS_TAG)
+endif
+
+TAG_LATEST ?= false
+
+platform_temp = $(subst -, ,$(ARCH))
+GOOS = $(word 1, $(platform_temp))
+GOARCH = $(word 2, $(platform_temp))
+
+# timestamp value that is formatted according to the RFC3339 standard
+BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+BUILD_TARGET ?= 
+
+IMAGE_NAME_LC = $(shell echo $(IMAGE_NAME) | tr A-Z a-z)
+
+# Set default base image dynamically for each arch
+ifeq ($(GOARCH),amd64)
+ifeq ($(DEBUG),true)
+	DOCKERFILE ?= Dockerfile.$(BIN).debug
+	VERSION_SUFFIX := -DBG
+	BUILD_CACHE :=
+else
+	DOCKERFILE ?= Dockerfile.$(BIN)
+	VERSION_SUFFIX := 
+	BUILD_CACHE :=  --no-cache
+endif
+endif
+
+GIT_COMMIT=$(shell git rev-parse HEAD)
+GIT_SHORT_COMMIT=$(shell git rev-parse --short HEAD)
+
+VCS_REF:= $(shell git rev-parse HEAD)
+VCS_BRANCH := $(shell git symbolic-ref --short -q HEAD)
+
 .PHONY: all
 all: package tag push
-
-PHONY: init 
-init: $(TOP_LEVEL)/go.mod ## Initialize the module
-
-$(TOP_LEVEL)/go.mod:
-	$(Q)go mod init $(PKG)
-	$(Q)go mod tidy
 
 PHONY: build-dirs
 build-dirs:
@@ -61,10 +115,6 @@ push: tag ## Push tagged images to docker registry
 	$(Q)docker push $(IMAGE_NAME_LC):$(GIT_SHORT_COMMIT)
 	$(Q)docker push $(IMAGE_NAME_LC):${VERSION}${VERSION_SUFFIX}
 #	$(Q)docker logout $(DOCKER_REGISTRY)
-
-.PHONY: help
-help: ## Show This Help
-	@for line in $$(cat $(TOP_LEVEL)/common.mk | grep "##" | grep -v "grep" | sed  "s/:.*##/:/g" | sed "s/\ /!/g"); do verb=$$(echo $$line | cut -d ":" -f 1); desc=$$(echo $$line | cut -d ":" -f 2 | sed "s/!/\ /g"); printf "%-30s--%s\n" "$$verb" "$$desc"; done
 
 .PHONY: test
 test: unit_test ## Run all available tests
