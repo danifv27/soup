@@ -14,12 +14,6 @@ TOP_LEVEL = ../..
 
 include $(TOP_LEVEL)/common.mk
 
-PHONY: init 
-init: $(TOP_LEVEL)/go.mod ## Initialize the module
-
 .PHONY: help
 help: ## Show This Help
 	@for line in $$(cat ./Makefile $(TOP_LEVEL)/common.mk | grep "##" | grep -v "grep" | sed  "s/:.*##/:/g" | sed "s/\ /!/g"); do verb=$$(echo $$line | cut -d ":" -f 1); desc=$$(echo $$line | cut -d ":" -f 2 | sed "s/!/\ /g"); printf "%-30s--%s\n" "$$verb" "$$desc"; done
-$(TOP_LEVEL)/go.mod:
-	$(Q)go mod init $(PKG)
-	$(Q)go mod tidy

@@ -43,11 +43,11 @@ IMAGE_NAME_LC = $(shell echo $(IMAGE_NAME) | tr A-Z a-z)
 # Set default base image dynamically for each arch
 ifeq ($(GOARCH),amd64)
 ifeq ($(DEBUG),true)
-	DOCKERFILE ?= Dockerfile.$(BIN).debug
+	DOCKERFILE ?= ./Dockerfile.$(BIN).debug
 	VERSION_SUFFIX := -DBG
 	BUILD_CACHE :=
 else
-	DOCKERFILE ?= Dockerfile.$(BIN)
+	DOCKERFILE ?= ./Dockerfile.$(BIN)
 	VERSION_SUFFIX := 
 	BUILD_CACHE :=  --no-cache
 endif
@@ -62,10 +62,17 @@ VCS_BRANCH := $(shell git symbolic-ref --short -q HEAD)
 .PHONY: all
 all: package tag push
 
+PHONY: init 
+init: $(TOP_LEVEL)/go.mod ## Initialize the module
+
+$(TOP_LEVEL)/go.mod:
+	$(Q)cd $(TOP_LEVEL) && go mod init $(PKG)
+	$(Q)cd $(TOP_LEVEL) && go mod tidy
+
 PHONY: build-dirs
 build-dirs:
-	@mkdir -p output/$(GOOS)/$(GOARCH)/bin
-	@mkdir -p .go/src/$(PKG) .go/pkg .go/bin .go/std/$(GOOS)/$(GOARCH) .go/go-build
+	@mkdir -p $(TOP_LEVEL)/output/$(GOOS)/$(GOARCH)/bin
+	@mkdir -p $(TOP_LEVEL)/.go/src/$(PKG) $(TOP_LEVEL)/.go/pkg $(TOP_LEVEL)/.go/bin $(TOP_LEVEL)/.go/std/$(GOOS)/$(GOARCH) $(TOP_LEVEL)/.go/go-build
 
 CLEAN_PHONY_TARGETS = clean-linux-amd64 clean-darwin-amd64 clean-windows-amd64
 .PHONY: $(CLEAN_PHONY_TARGETS)
@@ -146,7 +153,7 @@ output/$(GOOS)/$(GOARCH)/bin/$(BIN): build-dirs
 	PKG=$(PKG) \
 	BIN=$(BIN) \
 	DEBUG=$(DEBUG) \
-	OUTPUT_DIR=./output/$(GOOS)/$(GOARCH)/bin \
+	OUTPUT_DIR=$(TOP_LEVEL)/output/$(GOOS)/$(GOARCH)/bin \
 	$(TOP_LEVEL)/scripts/build.sh
 
 PHONY: local
@@ -159,6 +166,6 @@ local: build-dirs ## Build application for the local arch
 	BUILDUSER=$(VCS_USER) \
 	PKG=$(PKG) \
 	BIN=$(BIN) \
-	OUTPUT_DIR=./output/$(GOOS)/$(GOARCH)/bin \
+	OUTPUT_DIR=$(TOP_LEVEL)/output/$(GOOS)/$(GOARCH)/bin \
 	DEBUG=$(DEBUG) \
 	$(TOP_LEVEL)/scripts/build.sh

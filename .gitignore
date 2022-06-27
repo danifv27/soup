@@ -1,7 +1,7 @@
-output/
+**/*/output/
 version.json
-cmd/soup/__debug_bin.json
-cmd/soup/__debug_bin
 vendor/
 .vscode/*.log
-cmd/soup/.__debug_bin.json
+**/*/.__debug_bin.json
+**/*//soup/__debug_bin
+output
