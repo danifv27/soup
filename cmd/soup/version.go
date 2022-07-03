@@ -14,10 +14,14 @@ import (
 )
 
 type VersionCmd struct {
-	Format string `prefix:"version." short:"v" help:"Format the output (pretty|json)." enum:"pretty,json" default:"pretty"`
+	Flags VersionFlags `embed:""`
 }
 
-func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, error) {
+type VersionFlags struct {
+	Format string `prefix:"soup.version." short:"v" help:"Format the output (pretty|json)." enum:"pretty,json" default:"pretty"`
+}
+
+func initializeVersionCmd(cli *CLI) (application.Applications, error) {
 	var apps application.Applications
 
 	wArgs := infrastructure.WatcherArgs{
@@ -27,6 +31,7 @@ func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, err
 	gArgs := infrastructure.SVCArgs{
 		URI: "svc:noop",
 	}
+
 	infra, err := infrastructure.NewAdapters(gArgs, "audit:noop", "notifier:console", wArgs) //Version command does not need to talk with opsgenie
 	if err != nil {
 		return application.Applications{}, fmt.Errorf("initializeVersionCmd: %w", err)
@@ -47,11 +52,11 @@ func initializeVersionCmd(cli *CLI, f *WasSetted) (application.Applications, err
 	return apps, nil
 }
 
-func (cmd *VersionCmd) Run(cli *CLI, f *WasSetted) error {
+func (cmd *VersionCmd) Run(cli *CLI) error {
 	var err error
 	var apps application.Applications
 
-	if apps, err = initializeVersionCmd(cli, f); err != nil {
+	if apps, err = initializeVersionCmd(cli); err != nil {
 		return fmt.Errorf("Run: %w", err)
 	}
 
@@ -62,7 +67,7 @@ func (cmd *VersionCmd) Run(cli *CLI, f *WasSetted) error {
 	h.SetRunFunc(func() error {
 
 		req := commands.PrintVersionRequest{
-			Format: cli.Version.Format,
+			Format: cli.Version.Flags.Format,
 		}
 		err = apps.Commands.PrintVersion.Handle(req)
 
@@ -74,14 +79,14 @@ func (cmd *VersionCmd) Run(cli *CLI, f *WasSetted) error {
 		event := audit.Event{
 			Action:  "VersionShutdown",
 			Actor:   "system",
-			Message: "version command shutdown",
+			Message: "soup version shutdown",
 		}
 		return apps.Auditer.Audit(&event)
 	})
 
 	ports := infrastructure.NewPorts(apps, &h)
 	wg := &sync.WaitGroup{}
-	ports.MainLoop.Exec(wg, "version cmd")
+	ports.MainLoop.Exec(wg, "soup version cmd")
 	wg.Wait()
 
 	return nil

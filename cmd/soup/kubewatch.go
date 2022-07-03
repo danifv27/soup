@@ -15,9 +15,9 @@ import (
 )
 
 type KubeWatchCmd struct {
-	Actuator Actuator `embed:"" prefix:"kubewatch.actuator."`
-	Alert    Alert    `embed:"" prefix:"kubewatch.alert."`
-	Informer Informer `embed:"" prefix:"kubewatch.informer."`
+	Actuator Actuator `embed:"" prefix:"soup.kubewatch.actuator."`
+	Alert    Alert    `embed:"" prefix:"soup.kubewatch.alert."`
+	Informer Informer `embed:"" prefix:"soup.kubewatch.informer."`
 }
 
 func initializeWatchCmd(cli *CLI, f *WasSetted) (application.Applications, error) {

@@ -24,17 +24,17 @@ type VCS struct {
 }
 type RepoSubcmd struct {
 	Path string `arg:"" help:"repo to sync"`
-	VCS  VCS    `embed:"" prefix:"sync.repo.vcs."`
+	VCS  VCS    `embed:"" prefix:"soup.sync.repo.vcs."`
 }
 
 type ServeSubcmd struct {
 	Path string `arg:"" help:"repo to sync"`
-	VCS  VCS    `embed:"" prefix:"sync.serve.vcs."`
+	VCS  VCS    `embed:"" prefix:"soup.sync.serve.vcs."`
 }
 type SyncCmd struct {
-	Alert    Alert       `embed:"" prefix:"sync.alert."`
-	Actuator Actuator    `embed:"" prefix:"sync.actuator."`
-	K8s      K8s         `embed:"" prefix:"sync.k8s."`
+	Alert    Alert       `embed:"" prefix:"soup.sync.alert."`
+	Actuator Actuator    `embed:"" prefix:"soup.sync.actuator."`
+	K8s      K8s         `embed:"" prefix:"soup.sync.k8s."`
 	Repo     RepoSubcmd  `cmd:"" help:"One-shot reconciliation"`
 	Serve    ServeSubcmd `cmd:"" help:"Serve reconciliation bitbucket webhook"`
 }
@@ -135,8 +135,14 @@ func (cmd *RepoSubcmd) Run(cli *CLI, f *WasSetted) error {
 
 	ports := infrastructure.NewPorts(apps, &h)
 	wg := &sync.WaitGroup{}
+	rArgs := rest.RestArgs{
+		Address:         cli.Sync.Actuator.Address,
+		EnableBitbucket: false,
+		BitbucketSecret: cmd.VCS.Secret,
+		EnableAudit:     cli.Audit.Enable,
+	}
 	ports.Actuators.SetActuatorRoot(cli.Sync.Actuator.Root)
-	ports.Actuators.Start(cli.Sync.Actuator.Address, wg, false, cli.Audit.Enable, cmd.VCS.Secret)
+	ports.Actuators.Start(rArgs, wg)
 	ports.MainLoop.Exec(wg, "sync cmd")
 	wg.Wait()
 

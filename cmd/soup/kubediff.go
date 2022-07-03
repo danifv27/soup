@@ -49,9 +49,9 @@ func (r K8sResource) Decode(ctx *kong.DecodeContext, target reflect.Value) error
 }
 
 type KubeDiffCmd struct {
-	Actuator Actuator `embed:"" prefix:"kubediff.actuator."`
-	Alert    Alert    `embed:"" prefix:"kubediff.alert."`
-	Informer Informer `embed:"" prefix:"kubediff.informer."`
+	Actuator Actuator `embed:"" prefix:"soup.kubediff.actuator."`
+	Alert    Alert    `embed:"" prefix:"soup.kubediff.alert."`
+	Informer Informer `embed:"" prefix:"soup.kubediff.informer."`
 }
 
 func initializeDiffCmd(cli *CLI, f *WasSetted) (application.Applications, error) {

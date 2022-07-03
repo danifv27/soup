@@ -3,66 +3,74 @@
         "level": "debug",
         "format": "logger:stdout?json=false"
     },
-    "audit": {
-        "url": "audit:clover?path=/tmp/soup-audit&collection=audit",
-        "enable": true
-    },
-    "version": {
-        "format": "json"
-    },
-    "diff": {
-        "alert": {
-            "uri": "notifier:console",
-            "teams": ["team1", "team2", "team3"],
-            "priority": "P4",
-            "tags": ["tag1", "tag2", "tag3"],
-            "enable": false
-        },
-        "informer": {
-            "namespaces": ["origo-devops-stg"],
-            "resources": "v1/pods,v1/services,apps/v1/deployments,apps/v1/statefulsets,networking.k8s.io/v1/ingresses,v1/persistentvolumeclaims,v1/configmaps,apps/v1/daemonsets,batch/v1/cronjobs,batch/v1/jobs,rbac.authorization.k8s.io/v1/roles,rbac.authorization.k8s.io/v1/rolebindings",
-            "uri": "informer:k8s?context=sre-aws-stg&path=/Users/fraildan/.kube/config&resync=45s&mode=diff"
-        },
-        "actuator": {
-            "address": ":9081",
-            "root": "/actuators"
-        }
-    },
-    "sync": {
-        "k8s": {
-            "path": "k8s_path",
-            "context": "k8s_context"
-        },
-        "alert": {
-            "uri": "notifier:opsgenie?host=api.opsgenie.com&apikey=123456-1234-4321-7890-098765432109",
-            "teams": ["teamA", "teamB"],
-            "priority": "P3",
-            "tags": ["tagA", "tagB", "tagC"],
-            "enable": false
-        },
-        "resources": "resource1,resource2,resource3,resource4",
-        "actuator": {
-            "address": ":9081",
-            "root": "/actuators"
-        },
-
-        "serve": {
-            "vcs": {
-                "uri": "svc:git?username=user-serve&token=token-serve"
-            }
-        }
-    },
-    "net": {
+    "soup": {
         "version": {
             "format": "json"
         },
-        "wait": {
-            "protocol": "udp",
-            "addresses": "address1:por1,address2:port2,address3:port3",
-            "deadline": "15s",
-            "wait": "1m",
-            "break": "5s",
-            "packet": "this is udp packet"
+        "sync": {
+            "k8s": {
+                "path": "sync_k8s_path",
+                "context": "sync_k8s_context"
+            },
+            "alert": {
+                "uri": "notifier:opsgenie?host=api.opsgenie.com&apikey=123456-1234-4321-7890-098765432109",
+                "teams": ["teamA", "teamB"],
+                "priority": "P3",
+                "tags": ["tagA", "tagB", "tagC"],
+                "enable": false
+            },
+            "actuator": {
+                "address": ":9081",
+                "root": "/actuators"
+            },
+            "repo": {
+                "vcs": {
+                    "uri": "svc:git?username=user-repo&token=token-repo",
+                    "secret": "repo-secret"
+                }                
+            },
+            "serve": {
+                "vcs": {
+                    "uri": "svc:git?username=user-serve&token=token-serve",
+                    "secret": "serve-secret"
+                }
+            }
+        },
+        "kubewatch": {
+            "alert": {
+                "uri": "notifier:console",
+                "teams": ["teamA", "teamB"],
+                "priority": "P3",
+                "tags": ["tagA", "tagB"],
+                "enable": false
+            },
+            "actuator": {
+                "address": ":9081",
+                "root": "/actuators"
+            },
+            "informer": {
+                "namespaces": ["origo-devops-stg"],
+                "resources": "v1/pods,v1/services,apps/v1/deployments,apps/v1/statefulsets,networking.k8s.io/v1/ingresses,v1/persistentvolumeclaims,v1/configmaps,apps/v1/daemonsets,batch/v1/cronjobs,batch/v1/jobs,rbac.authorization.k8s.io/v1/roles,rbac.authorization.k8s.io/v1/rolebindings",
+                "uri": "informer:k8s?context=sre-aws-stg&path=/Users/fraildan/.kube/config&resync=45s&mode=diff"
+            }
+        },
+        "kubediff": {
+            "alert": {
+                "uri": "notifier:console",
+                "teams": ["teamA", "teamB"],
+                "priority": "P3",
+                "tags": ["tagA", "tagB"],
+                "enable": false
+            },
+            "actuator": {
+                "address": ":9081",
+                "root": "/actuators"
+            },
+            "informer": {
+                "namespaces": ["origo-devops-stg"],
+                "resources": "v1/pods,v1/services,apps/v1/deployments,apps/v1/statefulsets,networking.k8s.io/v1/ingresses,v1/persistentvolumeclaims,v1/configmaps,apps/v1/daemonsets,batch/v1/cronjobs,batch/v1/jobs,rbac.authorization.k8s.io/v1/roles,rbac.authorization.k8s.io/v1/rolebindings",
+                "uri": "informer:k8s?context=sre-aws-stg&path=/Users/fraildan/.kube/config&resync=45s&mode=diff"
+            }
         }
     }
 }

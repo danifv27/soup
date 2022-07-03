@@ -46,6 +46,7 @@ func main() {
 	}
 	exPath := filepath.Dir(ex)
 	exBin := filepath.Base(ex)
+	fmt.Printf("[DBG]path: %s, bin: %s", exPath, exBin)
 	//config file has precedence over envars
 	ctx := kong.Parse(&cli,
 		// kong.Bind(&setted),

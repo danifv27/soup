@@ -5,17 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/danifv27/soup/internal/infrastructure/watcher/kubernetes"
 )
-
-type Informer struct {
-	URI        string        `help:"K8s Informer URI" env:"SOUP_INFORMER_URI" hidden:"" default:"informer:k8s?context=aws-dummy&path=kubeconfig-path&resync=45s&mode=diff"`
-	Resources  []K8sResource `default:"v1/services,apps/v1/deployments" env:"SOUP_INFORMER_RESOURCES" help:"Resources to be watched"`
-	Namespaces []string      `default:"all" env:"SOUP_INFORMER_NAMESPACES" help:"Namespace to watch"`
-}
 
 type Log struct {
 	Level  string `enum:"debug,info,warn,error,fatal" help:"Set the logging level (debug|info|warn|error|fatal)" default:"info" env:"SOUP_LOGGING_LEVEL"`
@@ -52,31 +45,6 @@ type CLI struct {
 	Kubewatch KubeWatchCmd `cmd:"" help:"Kubernetes resource watch"`
 }
 
-type K8sResource struct {
-	Kind string
-}
-
-func (r K8sResource) Decode(ctx *kong.DecodeContext, target reflect.Value) error {
-	var value string
-	err := ctx.Scan.PopValueInto("value", &value)
-	if err != nil {
-		return err
-	}
-	resources := strings.Split(value, ",")
-	for _, resource := range resources {
-		res := K8sResource{}
-		res.Kind = resource
-		target.Set(reflect.Append(target, reflect.ValueOf(res)))
-	}
-	// If v represents a struct
-	// v := target.FieldByName("Kind")
-	// if v.IsValid() {
-	// 	v.SetString(value)
-	// }
-
-	return nil
-}
-
 func copyResources(resources []K8sResource) []kubernetes.Resource {
 	var res []kubernetes.Resource
 
@@ -109,6 +77,7 @@ func main() {
 	}
 	exPath := filepath.Dir(ex)
 	exBin := filepath.Base(ex)
+	fmt.Printf("[DBG]path: %s, bin: %s", exPath, exBin)
 	//config file has precedence over envars
 	ctx := kong.Parse(&cli,
 		kong.Bind(&setted),

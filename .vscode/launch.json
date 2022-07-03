@@ -18,7 +18,7 @@
             "showLog": true
         },
         {
-            "name": "Sync GitHub With Envars",
+            "name": "Sync repo GitHub With Envars",
             "type": "go",
             "request": "launch",
             "mode": "debug",
@@ -40,7 +40,7 @@
             "showLog": true,
         },
         {
-            "name": "Serve Webhook Bitbucket With Envars",
+            "name": "Sync serve Webhook Bitbucket With Envars",
             "type": "go",
             "request": "launch",
             "mode": "debug",
@@ -60,7 +60,7 @@
             "showLog": true
         },
         {
-            "name": "Diff Without Envars",
+            "name": "kubediff Without Envars",
             "type": "go",
             "request": "launch",
             "mode": "debug",
@@ -71,7 +71,7 @@
             "showLog": true
         },
         {
-            "name": "Watch",
+            "name": "kubewatch Without Envars",
             "type": "go",
             "request": "launch",
             "mode": "debug",
